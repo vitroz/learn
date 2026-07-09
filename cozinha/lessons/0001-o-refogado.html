@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 01 — O refogado perfeito</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#e0d7c8; --accent:#c2410c;
+    --soft:#6b6657; --code:#9a3412; --warnbg:#fff7ed; --warn:#9a3412; --green:#4d7c0f;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 1.4rem}
+  .facts{display:flex;gap:.5rem;flex-wrap:wrap;font-family:-apple-system,system-ui,sans-serif;font-size:.78rem;margin:0 0 2rem}
+  .facts span{background:#fbe8db;color:var(--code);padding:.25rem .7rem;border-radius:999px;font-weight:700}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;background:#fbe8db;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:1.2rem 0;font-family:-apple-system,system-ui,sans-serif}
+  .steps li{position:relative;padding:.7rem .8rem .7rem 3rem;background:#fff;border:1px solid var(--rule);
+    border-radius:10px;margin:.5rem 0;font-size:.95rem}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:.7rem;top:.7rem;
+    width:1.6rem;height:1.6rem;background:var(--accent);color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+  .steps b{color:var(--accent)}
+  .qty{width:100%;border-collapse:collapse;margin:1rem 0;font-family:-apple-system,system-ui,sans-serif;font-size:.9rem}
+  .qty th,.qty td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--rule)}
+  .qty th{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);background:#fbe8db}
+  .qty td b{color:var(--accent)}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .cal{border-left:3px solid var(--green);background:#f7fee7;padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .cal .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--green);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#fdba74}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Cozinha Básica · Lição 01 · A base</p>
+  <h1>O refogado perfeito</h1>
+  <p class="sub">Cebola e alho — a base de ~80% dos seus jantares rápidos.</p>
+  <div class="facts"><span>⏱ ~3 min</span><span>🍽 2 porções</span><span>🔥 ~40 kcal (base)</span><span>🧺 cebola, alho, sal, óleo</span></div>
+
+  <p class="lead">Antes de qualquer receita, existe uma base que abre quase tudo: arroz, carne moída, molho de tomate, sopa, legumes. É o <b>refogado</b> — e o Panelinha o chama, literalmente, de "a base do refogado da comida brasileira".<sup><a href="#r4">4</a></sup> Dominar esses 3 minutos é a maior alavanca de cozinha que existe. E é aqui que moram as três coisas que você quer: <b>quantidade exata</b>, <b>tempo</b> e <b>controle de caloria</b>.</p>
+
+  <h2>A técnica, passo a passo (2 porções)</h2>
+  <ol class="steps">
+    <li>Panela em <b>fogo baixo/médio</b>. Quando esquentar, coloque <b>1 colher de chá de óleo</b> (ou azeite).<sup><a href="#r2">2</a></sup></li>
+    <li>Junte a <b>cebola picada + 1 pitada de sal</b>. Refogue <b>2 minutos, até murchar</b> (ficar translúcida).<sup><a href="#r2">2</a></sup></li>
+    <li>Só agora o <b>alho picado</b>. Refogue <b>mais 1 minuto</b> — e pare.<sup><a href="#r2">2</a></sup></li>
+    <li>Pronto. Agora entra o arroz, a carne, o tomate… e o prato segue.</li>
+  </ol>
+
+  <h2>Por que nessa ordem (a ciência)</h2>
+  <p>A cebola vai <b>primeiro porque cozinha mais devagar</b> que o alho. O alho picado é pequeno e queima rápido; se entrasse junto, torraria antes de a cebola amolecer.<sup><a href="#r1">1</a></sup> A <b>pitada de sal na cebola</b> puxa a água dela — ela murcha mais rápido.<sup><a href="#r1">1</a></sup> E o <b>fogo é baixo porque alho queimado = alho amargo</b>: acima de ~120&nbsp;°C ele torra antes de soltar o sabor.<sup><a href="#r3">3</a></sup></p>
+
+  <h2>Quantidades exatas</h2>
+  <table class="qty">
+    <tr><th>Item</th><th>Quantidade (2 porções)</th></tr>
+    <tr><td>Óleo/azeite</td><td><b>1 colher de chá</b> (esse é o número low-cal)</td></tr>
+    <tr><td>Cebola</td><td><b>1 unidade</b> picada</td></tr>
+    <tr><td>Alho</td><td><b>2 dentes</b> picados</td></tr>
+    <tr><td>Sal (na cebola)</td><td><b>1 pitada</b></td></tr>
+    <tr><td>Proporção</td><td>≈ <b>2 dentes de alho : 1 cebola</b></td></tr>
+    <tr><td>Tempo</td><td>cebola <b>2 min</b> → alho <b>1 min</b></td></tr>
+  </table>
+  <p style="font-size:.9rem;color:var(--soft)">Regra de sal para o resto do prato: <b>~1% do peso</b> (≈10&nbsp;g de sal por 1&nbsp;kg de comida); água de fervura ≈ 2% (20&nbsp;g por 1&nbsp;L).<sup><a href="#r5">5</a></sup> Guarde tudo isso no <a href="../reference/quantidades-base.html">cartão de quantidades</a>.</p>
+
+  <div class="cal">
+    <div class="t">🥗 A alavanca de caloria (sem perder sabor)</div>
+    1 colher de sopa de óleo ≈ <b>120 kcal</b> — e a maioria despeja 3-5× o necessário. <b>Meça</b> (1 col. de chá basta) ou use um <b>borrifador</b>.<sup><a href="#r6">6</a></sup> Se a panela secar, solte com <b>1-2 colheres de água ou caldo</b> em vez de mais óleo. Para o sabor não cair: <b>sal certo</b> (~1% do peso) e finalize com <b>cheiro verde</b> fora do fogo — aroma de graça. Comida "de dieta" sem graça quase sempre está <i>sub-salgada</i>, não sem óleo.
+  </div>
+
+  <div class="safety">
+    <div class="t">⚠ Os erros clássicos de iniciante</div>
+    <b>Jogar alho e cebola juntos no fogo alto</b> — o alho queima em segundos e amarga tudo. <b>Panela lotada / fogo fraco demais</b> — a cebola cozinha na própria água e não sua direito. <b>Chutar o sal</b> — é muito mais fácil pôr do que tirar: comece na pitada e prove.
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="cozinha" data-lesson="0001" data-title="Lição 01 — O refogado perfeito">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="0" data-note="Cebola cozinha mais devagar que o alho — por isso vai primeiro.">
+      <p>1. No refogado, o que vai na panela primeiro?</p>
+      <button class="opt">A cebola picada e uma pitada de sal</button>
+      <button class="opt">O alho picado e uma pitada de sal</button>
+      <button class="opt">Os dois juntos, alho e cebola</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Alho picado queima rápido — 1 minuto e pare (Panelinha).">
+      <p>2. Depois de juntar o alho, por quanto tempo você refoga?</p>
+      <button class="opt">Cerca de cinco minutos completos</button>
+      <button class="opt">Cerca de um minuto apenas</button>
+      <button class="opt">Cerca de dez minutos completos</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="O sal puxa a água da cebola — ela murcha mais rápido.">
+      <p>3. Por que salgar a cebola logo no começo?</p>
+      <button class="opt">Para deixar a cebola bem mais doce</button>
+      <button class="opt">Para a cebola ficar mais crocante</button>
+      <button class="opt">Para desidratar e murchar mais rápido</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://panelinha.com.br/blog/pitadas/post/cebolaandalho-quem-vai-para-a-panela-primeiro" target="_blank">Panelinha (Rita Lobo) — “Cebola & Alho: quem vai primeiro”</a>: curtinho e exatamente no ponto. Junto, a <a href="https://panelinha.com.br/receita/refogado-cebola-alho-congelado" target="_blank">receita do refogado</a> com os minutos exatos.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🍳 <b>Eu sou seu professor.</b> Quer transformar esse refogado num jantar completo agora — arroz soltinho ou uma carne moída rápida, com as quantidades e o tempo? <b>Me pergunte no chat.</b>
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 02):</b> do refogado ao prato — um jantar completo em ~20 min (arroz soltinho + carne moída), com quantidades exatas e a versão low-cal.
+  </p>
+
+  <div class="footer-nav">
+    <a href="../reference/quantidades-base.html">🗂 Cartão de quantidades</a>
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://panelinha.com.br/blog/pitadas/post/cebolaandalho-quem-vai-para-a-panela-primeiro" target="_blank">Panelinha — Cebola & Alho: quem vai primeiro</a>.</li>
+      <li id="r2"><a href="https://panelinha.com.br/receita/refogado-cebola-alho-congelado" target="_blank">Panelinha — Refogado de cebola e alho</a> (quantidades e tempos).</li>
+      <li id="r3"><a href="https://www.seriouseats.com/the-food-lab" target="_blank">Serious Eats / The Food Lab (Kenji)</a> (alho queimado = amargo).</li>
+      <li id="r4"><a href="https://panelinha.com.br/blog/pitadas/post/cebolaandalho-a-base-do-refogado-da-comida-brasileira" target="_blank">Panelinha — a base do refogado da comida brasileira</a>.</li>
+      <li id="r5"><a href="https://www.saltfatacidheat.com" target="_blank">Salt, Fat, Acid, Heat (Samin Nosrat)</a> (sal ~1% do peso).</li>
+      <li id="r6"><a href="https://www.today.com/health/diet-fitness/dietitian-tip-spray-bottle-cooking-oil-rcna209739" target="_blank">TODAY — borrifar óleo p/ cortar caloria</a>.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
