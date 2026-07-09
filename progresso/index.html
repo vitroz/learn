@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meu Progresso</title>
+<meta name="theme-color" content="#1a1a17">
+<style>
+  :root{--ink:#1a1a17;--paper:#fdfcf8;--rule:#d9d4c5;--soft:#6b6657;--card:#fff;
+    --ok:#15803d;--okbg:#dcfce7;--no:#b91c1c;--nobg:#fee2e2;--accent:#9a3412}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:38rem;margin:0 auto;padding:2.4rem 1.15rem 4rem}
+  a.back{font-size:.85rem;color:var(--soft);text-decoration:none}
+  header{margin:.6rem 0 1.4rem}
+  h1{font-family:Georgia,serif;font-size:1.9rem;margin:.2rem 0 .3rem}
+  .tag{color:var(--soft);font-size:.95rem;margin:0}
+  .empty{background:#f3efe2;border-radius:12px;padding:1.4rem;text-align:center;color:var(--soft);margin-top:1.5rem}
+  .lesson{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:1.05rem 1.15rem;margin-bottom:.9rem}
+  .lesson h2{font-family:Georgia,serif;font-size:1.12rem;margin:0 0 .5rem}
+  .score{float:right;font-size:.8rem;font-weight:700;padding:.12rem .6rem;border-radius:999px}
+  .score.good{background:var(--okbg);color:var(--ok)}
+  .score.mid{background:#fef3c7;color:#92400e}
+  .score.low{background:var(--nobg);color:var(--no)}
+  .qline{display:flex;align-items:flex-start;gap:.5rem;font-size:.88rem;margin:.3rem 0;color:#333}
+  .qline .mk{flex:0 0 auto;font-weight:700}
+  .qline.ok .mk{color:var(--ok)} .qline.no .mk{color:var(--no)}
+  .meta{font-size:.76rem;color:var(--soft);margin-top:.55rem}
+  .actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(253,252,248,0),var(--paper) 30%);
+    padding-top:1rem;margin-top:1.5rem}
+  button{font-family:inherit;font-size:.95rem;font-weight:700;width:100%;border:none;border-radius:12px;
+    padding:.9rem;margin:.4rem 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .primary{background:#1a1a17;color:#fdfcf8}
+  .secondary{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+  .ghost{background:transparent;color:var(--soft);border:none;font-weight:400;font-size:.82rem}
+  .hint{font-size:.8rem;color:var(--soft);text-align:center;margin:.3rem 0 0;line-height:1.4}
+  .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1a1a17;color:#fff;
+    padding:.7rem 1.1rem;border-radius:10px;font-size:.85rem;opacity:0;transition:.2s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Meus cursos</a>
+  <header>
+    <h1>📊 Meu progresso</h1>
+    <p class="tag">Salvo neste aparelho conforme você faz os quizzes.</p>
+  </header>
+
+  <div id="list"></div>
+
+  <div class="actions" id="actions" style="display:none">
+    <button class="primary" id="send">📨 Enviar pro professor</button>
+    <button class="secondary" id="copy">📋 Copiar resumo</button>
+    <p class="hint">“Enviar” abre uma <b>issue</b> já preenchida no GitHub (precisa estar logado). Se preferir, “Copiar” e cole no chat.</p>
+    <button class="ghost" id="clear">Limpar progresso deste aparelho</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var REPO = "vitroz/learn";
+  var KEY = "learn.progress.v1";
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {lessons:{}}; }catch(e){ return {lessons:{}}; } }
+  function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"}); }catch(e){ return ""; } }
+  function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},2200); }
+
+  function render(){
+    var d = load();
+    var ids = Object.keys(d.lessons || {});
+    var list = document.getElementById("list");
+    if(!ids.length){
+      list.innerHTML = '<div class="empty">Você ainda não fez nenhum quiz.<br>Faça uma lição e volte aqui — seu desempenho aparece automaticamente.</div>';
+      return;
+    }
+    document.getElementById("actions").style.display = "block";
+    ids.sort();
+    list.innerHTML = ids.map(function(id){
+      var L = d.lessons[id];
+      var c = (L.last ? L.last.correct : 0), t = L.total || (L.questions||[]).length;
+      var cls = c===t ? "good" : (c >= Math.ceil(t/2) ? "mid" : "low");
+      var qs = (L.questions||[]).map(function(q){
+        if(!q) return "";
+        return '<div class="qline '+(q.lastCorrect?"ok":"no")+'"><span class="mk">'+(q.lastCorrect?"✓":"✗")+'</span><span>'+q.n+'. '+escapeHtml(q.label)+'</span></div>';
+      }).join("");
+      return '<div class="lesson"><span class="score '+cls+'">'+c+'/'+t+'</span>'+
+             '<h2>'+escapeHtml(L.title||id)+'</h2>'+qs+
+             '<div class="meta">Tentativas: '+(L.attempts||1)+' · melhor: '+((L.best&&L.best.correct)||c)+'/'+t+' · última: '+fmtDate(L.last&&L.last.at)+'</div></div>';
+    }).join("");
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  function buildReport(){
+    var d = load();
+    var lines = ["# Progresso dos quizzes",""];
+    Object.keys(d.lessons).sort().forEach(function(id){
+      var L=d.lessons[id], t=L.total||(L.questions||[]).length, c=L.last?L.last.correct:0;
+      lines.push("## "+(L.title||id)+"  ("+c+"/"+t+")");
+      (L.questions||[]).forEach(function(q){ if(q) lines.push((q.lastCorrect?"- [x] ":"- [ ] ")+"Q"+q.n+": "+q.label); });
+      lines.push("");
+    });
+    var human = lines.join("\n");
+    var json = "```json\n"+JSON.stringify(d,null,2)+"\n```";
+    return human+"\n"+json;
+  }
+
+  document.getElementById("send").onclick = function(){
+    var d = load();
+    var when = new Date().toLocaleDateString("pt-BR");
+    var title = "[progresso] "+when;
+    var body = buildReport();
+    var url = "https://github.com/"+REPO+"/issues/new?labels=progresso&title="+encodeURIComponent(title)+"&body="+encodeURIComponent(body);
+    window.open(url, "_blank");
+  };
+
+  document.getElementById("copy").onclick = function(){
+    var txt = buildReport();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast("Resumo copiado — cole no chat 🙂"); },
+        function(){ fallbackCopy(txt); });
+    } else { fallbackCopy(txt); }
+  };
+  function fallbackCopy(txt){
+    var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast("Resumo copiado 🙂"); }catch(e){ toast("Não consegui copiar — selecione manualmente."); }
+    document.body.removeChild(ta);
+  }
+
+  document.getElementById("clear").onclick = function(){
+    if(confirm("Apagar o progresso salvo neste aparelho? (não afeta o que você já enviou)")){
+      localStorage.removeItem(KEY); render(); document.getElementById("actions").style.display="none"; toast("Progresso limpo.");
+    }
+  };
+
+  render();
+</script>
+</body>
+</html>

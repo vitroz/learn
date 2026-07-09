@@ -177,11 +177,11 @@
   </div>
 
   <!-- ================= QUIZ ================= -->
-  <div class="quiz" id="quiz">
+  <div class="quiz" id="quiz" data-course="eletricidade" data-lesson="0002" data-title="Lição 02 — Fase, neutro e terra">
     <h3>Pratique agora — sem espiar acima</h3>
     <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa. Clique na resposta.</p>
 
-    <div class="q" data-correct="1">
+    <div class="q" data-correct="1" data-note="A fase é a única que, sozinha, te dá choque.">
       <p>1. Qual fio é o "quente" — o que dá choque sozinho?</p>
       <button class="opt">O fio neutro</button>
       <button class="opt">O fio fase</button>
@@ -189,7 +189,7 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="2">
+    <div class="q" data-correct="2" data-note="Azul-claro é exclusivo do neutro pela norma.">
       <p>2. Pela NBR 5410, a cor <b>azul-claro</b> é reservada para qual fio?</p>
       <button class="opt">Para a fase</button>
       <button class="opt">Para o terra</button>
@@ -197,7 +197,7 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="0">
+    <div class="q" data-correct="0" data-note="Exato: cor é pista, teste é garantia.">
       <p>3. Você abre uma tomada antiga e acha um fio azul. O que você faz?</p>
       <button class="opt">Testo: cor não garante</button>
       <button class="opt">Confio: azul é neutro</button>
@@ -205,7 +205,7 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="1">
+    <div class="q" data-correct="1" data-note="Em uso normal ele não conduz — só age no defeito.">
       <p>4. Para que serve o fio <b>terra</b> em uso normal?</p>
       <button class="opt">Levar a energia ao aparelho</button>
       <button class="opt">Desviar corrente de um defeito</button>
@@ -245,34 +245,6 @@
 
 </div>
 
-<script>
-  document.querySelectorAll('.q').forEach(function(q){
-    var correct = +q.dataset.correct;
-    var opts = q.querySelectorAll('.opt');
-    var fb = q.querySelector('.fb');
-    var notes = [
-      'A fase é a única que, sozinha, te dá choque.',
-      'Azul-claro é exclusivo do neutro pela norma.',
-      'Exato: cor é pista, teste é garantia.',
-      'Em uso normal ele não conduz — só age no defeito.'
-    ];
-    opts.forEach(function(opt, i){
-      opt.addEventListener('click', function(){
-        opts.forEach(function(o){ o.disabled = true; o.style.cursor='default'; });
-        var qn = Array.prototype.indexOf.call(q.parentNode.querySelectorAll('.q'), q);
-        if(i === correct){
-          opt.classList.add('right');
-          fb.textContent = '✓ Isso! ' + (notes[qn] || 'Fixado.');
-          fb.className = 'fb ok';
-        } else {
-          opt.classList.add('wrong');
-          opts[correct].classList.add('right');
-          fb.textContent = '✗ A resposta certa está em verde. Releia a seção acima e entenda o porquê.';
-          fb.className = 'fb no';
-        }
-      });
-    });
-  });
-</script>
+<script src="../../assets/quiz.js"></script>
 </body>
 </html>

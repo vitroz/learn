@@ -128,11 +128,11 @@
   <p>Note também: a <b>220&nbsp;V</b> o mesmo aparelho puxa <i>menos</i> corrente do que puxaria a 127&nbsp;V (a mesma potência, dividida por uma tensão maior). Por isso aparelhos "pesados" como chuveiro e forno costumam ser ligados em 220&nbsp;V.<sup><a href="#r4">4</a></sup></p>
 
   <!-- ================= QUIZ ================= -->
-  <div class="quiz" id="quiz">
+  <div class="quiz" id="quiz" data-course="eletricidade" data-lesson="0001" data-title="Lição 01 — Tensão, corrente e potência">
     <h3>Pratique agora — sem espiar acima</h3>
     <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa o conhecimento. Clique na resposta.</p>
 
-    <div class="q" data-correct="0">
+    <div class="q" data-correct="0" data-note="Pressão empurra — essa é a tensão.">
       <p>1. Na analogia da água, a <b>tensão (volts)</b> corresponde a quê?</p>
       <button class="opt">A pressão no cano</button>
       <button class="opt">A vazão no cano</button>
@@ -140,7 +140,7 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="0">
+    <div class="q" data-correct="0" data-note="Corrente é o que flui de fato, em amperes.">
       <p>2. O que é medido em <b>amperes (A)</b>?</p>
       <button class="opt">A corrente que flui</button>
       <button class="opt">A pressão que empurra</button>
@@ -148,7 +148,7 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="1">
+    <div class="q" data-correct="1" data-note="2200 ÷ 220 = 10 A.">
       <p>3. Um aparelho de <b>2200&nbsp;W</b> ligado em <b>220&nbsp;V</b> puxa quantos amperes? <span style="font-weight:400;color:var(--soft)">(use I = P ÷ V)</span></p>
       <button class="opt">100 amperes</button>
       <button class="opt">10 amperes</button>
@@ -188,27 +188,6 @@
 
 </div>
 
-<script>
-  document.querySelectorAll('.q').forEach(function(q){
-    var correct = +q.dataset.correct;
-    var opts = q.querySelectorAll('.opt');
-    var fb = q.querySelector('.fb');
-    opts.forEach(function(opt, i){
-      opt.addEventListener('click', function(){
-        opts.forEach(function(o){ o.disabled = true; o.style.cursor='default'; });
-        if(i === correct){
-          opt.classList.add('right');
-          fb.textContent = '✓ Isso! ' + (q.querySelector('p').textContent.indexOf('2200') > -1 ? '2200 ÷ 220 = 10 A.' : 'Modelo mental fixado.');
-          fb.className = 'fb ok';
-        } else {
-          opt.classList.add('wrong');
-          opts[correct].classList.add('right');
-          fb.textContent = '✗ A resposta certa está em verde. Releia a seção acima e tente entender o porquê.';
-          fb.className = 'fb no';
-        }
-      });
-    });
-  });
-</script>
+<script src="../../assets/quiz.js"></script>
 </body>
 </html>
