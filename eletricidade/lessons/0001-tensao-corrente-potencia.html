@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 01 — O que corre nos seus fios</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --warn:#92400e; --warnbg:#fef3c7;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif; font-size:.72rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 .4rem}
+  h1{font-size:2rem; line-height:1.15; margin:0 0 .3rem; font-weight:700}
+  .sub{color:var(--soft); font-style:italic; margin:0 0 2rem}
+  h2{font-size:1.28rem; margin:2.6rem 0 .6rem; border-bottom:1px solid var(--rule); padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  .water{color:var(--water); font-weight:700}
+  .analogy{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--rule);
+    border-radius:8px; overflow:hidden; margin:1.3rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .analogy>div{padding:.9rem 1.1rem}
+  .analogy .h{background:#f3efe2; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--soft); border-bottom:1px solid var(--rule); font-weight:700}
+  .analogy .l{border-right:1px solid var(--rule)}
+  .analogy .term{font-weight:700; font-size:1.05rem}
+  .analogy .water-side{color:var(--water)}
+  .formula{font-family:-apple-system,system-ui,sans-serif; text-align:center; font-size:1.5rem;
+    background:#f3efe2; border-radius:8px; padding:1.2rem; margin:1.4rem 0; font-weight:600}
+  .formula small{display:block; font-size:.78rem; color:var(--soft); font-weight:400; margin-top:.5rem; letter-spacing:.04em}
+  .ex{border-left:3px solid var(--water); background:#f1f7fc; padding:.8rem 1.1rem; margin:1.2rem 0; border-radius:0 6px 6px 0}
+  .ex b{color:var(--water)}
+  .safety{border-left:3px solid var(--warn); background:var(--warnbg); padding:.9rem 1.1rem;
+    margin:1.4rem 0; border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif; font-weight:700; color:var(--warn);
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem}
+  sup a{font-size:.7rem; text-decoration:none; color:var(--accent); font-weight:700}
+  /* quiz */
+  .quiz{font-family:-apple-system,system-ui,sans-serif; border:1px solid var(--rule);
+    border-radius:10px; padding:1.3rem 1.4rem; margin:1.6rem 0; background:#fff}
+  .quiz h3{margin:0 0 .2rem; font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600; margin:0 0 .55rem; font-family:inherit}
+  .opt{display:block; width:100%; text-align:left; border:1px solid var(--rule); background:#fafaf6;
+    padding:.6rem .85rem; margin:.4rem 0; border-radius:7px; cursor:pointer; font-size:.95rem;
+    font-family:inherit; transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7; border-color:#16a34a; color:#14532d; font-weight:600}
+  .opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+  .fb{font-size:.86rem; margin-top:.5rem; min-height:1.1rem; color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .footer-nav{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; color:var(--soft)}
+  .footer-nav a{display:inline-block; margin-right:1.2rem}
+  .ask{background:#1a1a17; color:#fdfcf8; border-radius:10px; padding:1.1rem 1.3rem; margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.95rem}
+  .ask b{color:#fbbf24}
+  .refs{font-family:-apple-system,system-ui,sans-serif; font-size:.82rem; color:var(--soft); margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  .primary{border:1px dashed var(--accent); border-radius:8px; padding:1rem 1.2rem; margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .primary .t{font-weight:700; color:var(--accent); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase}
+  @media (max-width:480px){ .analogy{grid-template-columns:1fr} .analogy .l{border-right:none} }
+  @media print{ body{background:#fff} .quiz,.ask{break-inside:avoid} .opt{cursor:default} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Lição 01 · Fundamentos · Casa 220&nbsp;V</p>
+  <h1>O que realmente corre nos seus fios</h1>
+  <p class="sub">Tensão, corrente e potência — o modelo mental que sustenta todo o resto.</p>
+
+  <p class="lead">Antes de encostar em qualquer tomada, você precisa de um modelo mental do que está acontecendo dentro do fio. Bem, três palavras explicam quase tudo na sua casa: <b>tensão</b>, <b>corrente</b> e <b>potência</b>. Esta lição te dá esse modelo — e ele é mais simples do que parece, porque a eletricidade se comporta como <span class="water">água num cano</span>.</p>
+
+  <h2>A analogia da água</h2>
+  <p>Imagine a água correndo por um cano. Dá pra descrever esse sistema com duas ideias: a <span class="water">pressão</span> que empurra a água, e a <span class="water">vazão</span> — quanta água passa de fato. A eletricidade funciona igual.<sup><a href="#r1">1</a></sup></p>
+
+  <div class="analogy">
+    <div class="h l">Na eletricidade</div>
+    <div class="h">No cano de água</div>
+
+    <div class="l"><span class="term">Tensão</span> — medida em <b>volts (V)</b><br>A pressão que empurra a eletricidade. Na sua casa: <b>220&nbsp;V</b>.</div>
+    <div class="water-side">A <b>pressão</b> da água no cano. Quanto mais alta, mais "força" para empurrar.</div>
+
+    <div class="l"><span class="term">Corrente</span> — medida em <b>amperes (A)</b><br>Quanta eletricidade flui de fato pelo fio.</div>
+    <div class="water-side">A <b>vazão</b> — quantos litros por segundo realmente passam.</div>
+
+    <div class="l"><span class="term">Resistência</span> — medida em <b>ohms (Ω)</b><br>O quanto o material dificulta a passagem.</div>
+    <div class="water-side">O <b>aperto</b> do cano. Cano fino → menos água passa.</div>
+  </div>
+
+  <p>A relação entre eles é a <b>Lei de Ohm</b>: para uma mesma tensão, quanto maior a resistência, menor a corrente.<sup><a href="#r2">2</a></sup> Você não precisa calcular isso ainda — só guardar a intuição: <i>pressão empurra, resistência segura, e o que sobra vira corrente.</i></p>
+
+  <div class="safety">
+    <div class="t">⚠ Por que isso importa pra sua segurança</div>
+    É a <b>corrente</b> (amperes) que aquece o fio e que machuca uma pessoa — não a tensão sozinha. Fio fino com corrente demais esquenta e pode causar incêndio. É por isso que cada coisa na sua casa tem um disjuntor do tamanho certo (veremos nas próximas lições).
+  </div>
+
+  <h2>Potência: juntando tudo</h2>
+  <p>A <b>potência</b> é o quanto um aparelho consome de energia por segundo — medida em <b>watts (W)</b>. É o número que vem escrito no chuveiro, no micro-ondas, na lâmpada. Ela junta tensão e corrente numa fórmula só:<sup><a href="#r3">3</a></sup></p>
+
+  <div class="formula">
+    P = V × I
+    <small>Potência (watts) = Tensão (volts) × Corrente (amperes)</small>
+  </div>
+
+  <p>Reorganizando, você descobre <b>quantos amperes</b> um aparelho puxa — que é o que importa para escolher fio e disjuntor:</p>
+  <div class="formula" style="font-size:1.25rem">
+    I = P ÷ V
+  </div>
+
+  <div class="ex">
+    <p><b>Exemplo da sua casa (220&nbsp;V):</b> um chuveiro de <b>5500&nbsp;W</b> puxa<br>
+    I = 5500&nbsp;W ÷ 220&nbsp;V = <b>25&nbsp;amperes</b>.</p>
+    <p style="margin-bottom:0">É muita corrente! Por isso o chuveiro precisa de fio grosso e disjuntor exclusivo. Já um carregador de celular (≈10&nbsp;W) puxa menos de 0,05&nbsp;A — quase nada. <b>Mesma tensão (220&nbsp;V), correntes completamente diferentes.</b></p>
+  </div>
+
+  <p>Note também: a <b>220&nbsp;V</b> o mesmo aparelho puxa <i>menos</i> corrente do que puxaria a 127&nbsp;V (a mesma potência, dividida por uma tensão maior). Por isso aparelhos "pesados" como chuveiro e forno costumam ser ligados em 220&nbsp;V.<sup><a href="#r4">4</a></sup></p>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz">
+    <h3>Pratique agora — sem espiar acima</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa o conhecimento. Clique na resposta.</p>
+
+    <div class="q" data-correct="0">
+      <p>1. Na analogia da água, a <b>tensão (volts)</b> corresponde a quê?</p>
+      <button class="opt">A pressão no cano</button>
+      <button class="opt">A vazão no cano</button>
+      <button class="opt">A folga do cano</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0">
+      <p>2. O que é medido em <b>amperes (A)</b>?</p>
+      <button class="opt">A corrente que flui</button>
+      <button class="opt">A pressão que empurra</button>
+      <button class="opt">A energia que consome</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1">
+      <p>3. Um aparelho de <b>2200&nbsp;W</b> ligado em <b>220&nbsp;V</b> puxa quantos amperes? <span style="font-weight:400;color:var(--soft)">(use I = P ÷ V)</span></p>
+      <button class="opt">100 amperes</button>
+      <button class="opt">10 amperes</button>
+      <button class="opt">20 amperes</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">A explicação mais gentil da analogia da água está na <a href="https://loja.br.abb.com/blog/post/tensao-corrente-e-resistencia-eletrica" target="_blank">ABB — “Tensão, corrente e resistência elétrica”</a>. Leia uma vez antes da próxima lição. Quando quiser o lado mais preciso (Lei de Ohm), veja <a href="https://embarcados.com.br/lei-de-ohm/" target="_blank">Embarcados — Lei de Ohm</a>.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Travou em algo — a fórmula, a analogia, por que 220&nbsp;V puxa menos corrente? <b>Me pergunte no chat.</b> Não passe pra próxima lição com dúvida: cada conceito daqui sustenta o próximo.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 02):</b> os três fios da sua casa — <b>fase, neutro e terra</b> — o que cada um faz e o código de cores da NBR&nbsp;5410. E a regra de ouro: por que você <i>nunca</i> confia na cor do fio.
+  </p>
+
+  <div class="footer-nav">
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+    <a href="../reference/grandezas-eletricas.html">🗂 Cartão de referência</a>
+    <a href="../RESOURCES.md">🔗 Recursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://loja.br.abb.com/blog/post/tensao-corrente-e-resistencia-eletrica" target="_blank">ABB — Tensão, corrente e resistência elétrica</a> (analogia da água).</li>
+      <li id="r2"><a href="https://embarcados.com.br/lei-de-ohm/" target="_blank">Embarcados — Lei de Ohm</a> (relação entre V, I e R).</li>
+      <li id="r3"><a href="https://cursos.escolaeducacao.com.br/artigo/tens-o-corrente-resist-ncia-e-pot-ncia-el-trica" target="_blank">Escola Educação — Potência elétrica</a> (fórmula P = V·I).</li>
+      <li id="r4"><a href="https://clamper.com.br/curiosidadesprevencao/127v-ou-220v-tudo-o-que-voce-precisa-saber/" target="_blank">CLAMPER — 127V ou 220V</a> (por que cargas altas usam 220&nbsp;V).</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.q').forEach(function(q){
+    var correct = +q.dataset.correct;
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(opt, i){
+      opt.addEventListener('click', function(){
+        opts.forEach(function(o){ o.disabled = true; o.style.cursor='default'; });
+        if(i === correct){
+          opt.classList.add('right');
+          fb.textContent = '✓ Isso! ' + (q.querySelector('p').textContent.indexOf('2200') > -1 ? '2200 ÷ 220 = 10 A.' : 'Modelo mental fixado.');
+          fb.className = 'fb ok';
+        } else {
+          opt.classList.add('wrong');
+          opts[correct].classList.add('right');
+          fb.textContent = '✗ A resposta certa está em verde. Releia a seção acima e tente entender o porquê.';
+          fb.className = 'fb no';
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

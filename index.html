@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meus Cursos</title>
+<meta name="theme-color" content="#1a1a17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cursos">
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --soft:#6b6657; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:34rem;margin:0 auto;padding:2.6rem 1.15rem 4rem}
+  header{text-align:center;margin-bottom:2rem}
+  .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);font-weight:800}
+  h1{font-family:Georgia,serif;font-size:2rem;line-height:1.1;margin:.35rem 0 .3rem}
+  .tag{color:var(--soft);font-size:.98rem;margin:0}
+  .section-h{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);
+    font-weight:800;margin:2rem .2rem .8rem}
+  a.course{display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--rule);border-radius:16px;padding:1.15rem 1.2rem;margin-bottom:.9rem;
+    transition:transform .08s ease, box-shadow .12s ease;-webkit-tap-highlight-color:transparent}
+  a.course:active{transform:scale(.985)}
+  a.course:hover{box-shadow:0 4px 18px rgba(0,0,0,.09);border-color:var(--soft)}
+  .ico{font-size:2rem;line-height:1;flex:0 0 auto;width:3rem;height:3rem;display:flex;
+    align-items:center;justify-content:center;background:#f3efe2;border-radius:12px}
+  .meta{flex:1;min-width:0}
+  .course .t{font-family:Georgia,serif;font-size:1.25rem;font-weight:700;margin:0 0 .15rem;line-height:1.15}
+  .course .d{font-size:.9rem;color:var(--soft);margin:0}
+  .course .pill{display:inline-block;margin-top:.45rem;font-size:.72rem;font-weight:700;
+    background:#dcfce7;color:#14532d;padding:.1rem .55rem;border-radius:999px}
+  .arrow{color:var(--soft);font-size:1.3rem;flex:0 0 auto}
+  .soon{opacity:.55}
+  .soon .pill{background:#f3efe2;color:var(--soft)}
+  .tip{font-size:.82rem;color:var(--soft);background:#f3efe2;border-radius:12px;padding:.9rem 1.05rem;margin-top:1.8rem}
+  .tip b{color:var(--ink)}
+  footer{text-align:center;margin-top:2.4rem;font-size:.78rem;color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kick">Central de Estudos</div>
+    <h1>📚 Meus Cursos</h1>
+    <p class="tag">Aprendizado guiado, um assunto de cada vez</p>
+  </header>
+
+  <div class="section-h">Cursos ativos</div>
+
+  <a class="course" href="eletricidade/">
+    <div class="ico">⚡</div>
+    <div class="meta">
+      <div class="t">Eletricidade Doméstica</div>
+      <p class="d">Reparos pequenos com segurança — tensão, fios, disjuntores (casa 220&nbsp;V).</p>
+      <span class="pill">2 lições · em andamento</span>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+  <a class="course soon">
+    <div class="ico">➕</div>
+    <div class="meta">
+      <div class="t">Próximo assunto</div>
+      <p class="d">Quando você quiser aprender algo novo, ele aparece aqui.</p>
+      <span class="pill">a definir</span>
+    </div>
+    <div class="arrow">·</div>
+  </a>
+
+  <div class="tip">
+    📱 <b>Dica:</b> no celular, toque em <b>Compartilhar → Adicionar à Tela de Início</b>. Toda a sua central de estudos vira um ícone, como um app.
+  </div>
+
+  <footer>
+    Central montada com seu professor de IA · novos cursos e lições são adicionados aqui
+  </footer>
+
+</div>
+</body>
+</html>

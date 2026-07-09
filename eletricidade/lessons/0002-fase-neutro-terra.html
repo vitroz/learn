@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 02 — Fase, neutro e terra</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --warn:#92400e; --warnbg:#fef3c7;
+    --fase:#b91c1c; --neutro:#1d6fb8; --terra:#15803d;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif; font-size:.72rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 .4rem}
+  h1{font-size:2rem; line-height:1.15; margin:0 0 .3rem; font-weight:700}
+  .sub{color:var(--soft); font-style:italic; margin:0 0 2rem}
+  h2{font-size:1.28rem; margin:2.6rem 0 .6rem; border-bottom:1px solid var(--rule); padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  .recall{border-left:3px solid var(--soft); background:#f3efe2; padding:.7rem 1.1rem; margin:1.3rem 0;
+    border-radius:0 6px 6px 0; font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .recall b{color:var(--ink)}
+  /* três fios */
+  .wires{margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .wire{display:grid; grid-template-columns:auto 1fr; gap:0 1rem; align-items:start;
+    border:1px solid var(--rule); border-radius:9px; padding:.9rem 1.1rem; margin:.7rem 0; background:#fff}
+  .wire .dot{width:1.5rem; height:1.5rem; border-radius:50%; margin-top:.2rem; border:2px solid rgba(0,0,0,.12)}
+  .wire h3{margin:0 0 .2rem; font-size:1.08rem}
+  .wire p{margin:.15rem 0 0; font-size:.95rem; line-height:1.5}
+  .wire .role{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; font-weight:700}
+  .fase .dot{background:var(--fase)} .fase .role{color:var(--fase)}
+  .neutro .dot{background:var(--neutro)} .neutro .role{color:var(--neutro)}
+  .terra .dot{background:linear-gradient(135deg,#15803d 0 50%,#facc15 50% 100%)} .terra .role{color:var(--terra)}
+  /* tabela de cores */
+  .colors{width:100%; border-collapse:collapse; margin:1.2rem 0; font-family:-apple-system,system-ui,sans-serif;
+    font-size:.92rem; border:1px solid var(--rule); border-radius:8px; overflow:hidden}
+  .colors th{background:#f3efe2; text-align:left; padding:.6rem .8rem; font-size:.72rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--soft); border-bottom:1px solid var(--rule)}
+  .colors td{padding:.6rem .8rem; border-bottom:1px solid var(--rule); vertical-align:top}
+  .colors tr:last-child td{border-bottom:none}
+  .swatch{display:inline-block; width:.85rem; height:.85rem; border-radius:3px; vertical-align:middle;
+    margin-right:.35rem; border:1px solid rgba(0,0,0,.15)}
+  .reserved{font-weight:700} .free{color:var(--soft); font-style:italic}
+  .safety{border-left:3px solid var(--warn); background:var(--warnbg); padding:.9rem 1.1rem;
+    margin:1.4rem 0; border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif; font-weight:700; color:var(--warn);
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem}
+  .golden{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .golden .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .golden p{margin:.45rem 0 0; font-size:1rem}
+  sup a{font-size:.7rem; text-decoration:none; color:var(--accent); font-weight:700}
+  /* quiz */
+  .quiz{font-family:-apple-system,system-ui,sans-serif; border:1px solid var(--rule);
+    border-radius:10px; padding:1.3rem 1.4rem; margin:1.6rem 0; background:#fff}
+  .quiz h3{margin:0 0 .2rem; font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600; margin:0 0 .55rem; font-family:inherit}
+  .opt{display:block; width:100%; text-align:left; border:1px solid var(--rule); background:#fafaf6;
+    padding:.6rem .85rem; margin:.4rem 0; border-radius:7px; cursor:pointer; font-size:.95rem;
+    font-family:inherit; transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7; border-color:#16a34a; color:#14532d; font-weight:600}
+  .opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+  .fb{font-size:.86rem; margin-top:.5rem; min-height:1.1rem; color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .footer-nav{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; color:var(--soft)}
+  .footer-nav a{display:inline-block; margin-right:1.2rem}
+  .ask{background:#1a1a17; color:#fdfcf8; border-radius:10px; padding:1.1rem 1.3rem; margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.95rem}
+  .ask b{color:#fbbf24}
+  .refs{font-family:-apple-system,system-ui,sans-serif; font-size:.82rem; color:var(--soft); margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  .primary{border:1px dashed var(--accent); border-radius:8px; padding:1rem 1.2rem; margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .primary .t{font-weight:700; color:var(--accent); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase}
+  @media (max-width:480px){ .colors{font-size:.84rem} .colors th,.colors td{padding:.5rem .5rem} }
+  @media print{ body{background:#fff} .quiz,.ask{break-inside:avoid} .opt{cursor:default} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Lição 02 · Fundamentos · Casa 220&nbsp;V</p>
+  <h1>Os três fios da sua casa</h1>
+  <p class="sub">Fase, neutro e terra — o que cada um faz, a cor de cada um, e a regra que pode salvar sua vida.</p>
+
+  <div class="recall">
+    <b>Recuperando a Lição 01:</b> lembra que é a <b>corrente</b> (amperes) que machuca uma pessoa, não a tensão sozinha? Guarde isso — porque agora vamos ver <i>qual</i> dos fios pode empurrar essa corrente por você.
+  </div>
+
+  <p class="lead">Abra qualquer tomada ou interruptor e você vai encontrar fios de cores diferentes. Eles não são iguais: cada um tem uma <b>função</b>, e uma delas é perigosa. Esta lição te ensina a diferenciar os três — <span style="color:var(--fase);font-weight:700">fase</span>, <span style="color:var(--neutro);font-weight:700">neutro</span> e <span style="color:var(--terra);font-weight:700">terra</span> — pela função, não só pela cor.</p>
+
+  <h2>O que cada fio faz</h2>
+  <p>Pense de novo no cano de água da Lição 01. Para a água circular, ela precisa de um caminho de <i>ida</i> e um de <i>volta</i>. A eletricidade é igual: precisa de um circuito fechado.<sup><a href="#r1">1</a></sup></p>
+
+  <div class="wires">
+    <div class="wire fase">
+      <div class="dot"></div>
+      <div>
+        <span class="role">A ida · perigoso</span>
+        <h3>Fase</h3>
+        <p>Traz a energia "viva" até o aparelho. É o fio <b>quente</b> — o que dá choque. Na sua casa, é entre a <b>fase</b> e o <b>neutro</b> que existem os <b>220&nbsp;V</b>.</p>
+      </div>
+    </div>
+    <div class="wire neutro">
+      <div class="dot"></div>
+      <div>
+        <span class="role">A volta</span>
+        <h3>Neutro</h3>
+        <p>O caminho de retorno: fecha o circuito para a corrente voltar. Em uso normal, trabalha junto com a fase — não é o "fio seguro".</p>
+      </div>
+    </div>
+    <div class="wire terra">
+      <div class="dot"></div>
+      <div>
+        <span class="role">A proteção</span>
+        <h3>Terra</h3>
+        <p>Fio de <b>segurança</b>. Em uso normal não conduz nada. Se um aparelho der defeito e a carcaça ficar energizada, o terra desvia essa corrente para o chão — em vez de para o <i>seu</i> corpo.<sup><a href="#r1">1</a></sup></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="safety">
+    <div class="t">⚠ O que isso significa na prática</div>
+    A <b>fase</b> é a única que, sozinha, te dá choque (você fechando o circuito pelo chão). O <b>terra</b> existe justamente para que um defeito acione o disjuntor ou o DR <i>antes</i> de machucar alguém. É por isso que tirar o pino de terra de um plugue é perigoso — você desliga a rede de proteção.
+  </div>
+
+  <h2>O código de cores (NBR 5410)</h2>
+  <p>A norma brasileira <b>reserva</b> duas cores — e só essas duas são obrigatórias. A cor da fase é <b>livre</b>.<sup><a href="#r2">2</a></sup></p>
+
+  <table class="colors">
+    <thead>
+      <tr><th>Fio</th><th>Cor</th><th>Regra</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b style="color:var(--neutro)">Neutro</b></td>
+        <td><span class="swatch" style="background:#7dd3fc"></span>Azul-claro</td>
+        <td class="reserved">Reservada — só o neutro pode usar.</td>
+      </tr>
+      <tr>
+        <td><b style="color:var(--terra)">Terra</b></td>
+        <td><span class="swatch" style="background:linear-gradient(135deg,#15803d 0 50%,#facc15 50%)"></span>Verde ou verde-amarelo</td>
+        <td class="reserved">Reservada — só o terra pode usar.</td>
+      </tr>
+      <tr>
+        <td><b style="color:var(--fase)">Fase</b></td>
+        <td>
+          <span class="swatch" style="background:#b91c1c"></span>
+          <span class="swatch" style="background:#1a1a17"></span>
+          <span class="swatch" style="background:#fff"></span>
+          <span class="swatch" style="background:#9ca3af"></span>
+          Qualquer outra
+        </td>
+        <td class="free">Livre — comumente vermelho, preto, branco ou cinza. <b>Nunca</b> azul-claro nem verde.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Repare na lógica: você pode <i>deduzir</i> o neutro e o terra pela cor reservada. A fase é "tudo que sobra". Mas — e este é o ponto da lição —</p>
+
+  <div class="golden">
+    <div class="t">🔑 A regra de ouro</div>
+    <p><b>Nunca confie na cor do fio. Sempre teste a ausência de tensão antes de tocar.</b></p>
+    <p>Em instalações antigas, feitas por amador, ou remendadas com o que tinha na gaveta, é comuníssimo encontrar fase em fio azul ou neutro em fio vermelho. A cor é uma <i>pista</i>, não uma garantia. Quem garante é o teste — e é exatamente isso que a Lição 03 vai te ensinar a fazer.<sup><a href="#r3">3</a></sup></p>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz">
+    <h3>Pratique agora — sem espiar acima</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa. Clique na resposta.</p>
+
+    <div class="q" data-correct="1">
+      <p>1. Qual fio é o "quente" — o que dá choque sozinho?</p>
+      <button class="opt">O fio neutro</button>
+      <button class="opt">O fio fase</button>
+      <button class="opt">O fio terra</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2">
+      <p>2. Pela NBR 5410, a cor <b>azul-claro</b> é reservada para qual fio?</p>
+      <button class="opt">Para a fase</button>
+      <button class="opt">Para o terra</button>
+      <button class="opt">Para o neutro</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0">
+      <p>3. Você abre uma tomada antiga e acha um fio azul. O que você faz?</p>
+      <button class="opt">Testo: cor não garante</button>
+      <button class="opt">Confio: azul é neutro</button>
+      <button class="opt">Corto: azul é seguro</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1">
+      <p>4. Para que serve o fio <b>terra</b> em uso normal?</p>
+      <button class="opt">Levar a energia ao aparelho</button>
+      <button class="opt">Desviar corrente de um defeito</button>
+      <button class="opt">Fechar o circuito da corrente</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://www.mundodaeletrica.com.br/qual-a-cor-correta-dos-cabos-eletricos-como-identificar/" target="_blank">Mundo da Elétrica — “Qual a cor correta dos cabos elétricos”</a> uma vez antes da próxima lição: confirma quais cores são reservadas e por quê. Para o lado da sabedoria — por que <i>nunca</i> confiar na cor — o eletricista veterano <a href="https://www.paulobrites.com.br/" target="_blank">Paulo Brites</a> é a melhor referência.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Ficou com dúvida — por que o neutro não é "seguro", o que é o DR, por que 220&nbsp;V fica entre fase e neutro? <b>Me pergunte no chat.</b> Não passe pra Lição 03 (que envolve tocar na rede) com qualquer incerteza aqui.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 03):</b> a habilidade mais importante de todas — <b>desenergizar com segurança</b>. Desligar o disjuntor certo e <i>confirmar</i> que o circuito está morto antes de encostar. A sequência da NR-10, passo a passo.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0001-tensao-corrente-potencia.html">← Lição 01</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+    <a href="../reference/fios-cores-funcao.html">🗂 Cartão de referência</a>
+    <a href="../RESOURCES.md">🔗 Recursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://loja.br.abb.com/blog/post/tensao-corrente-e-resistencia-eletrica" target="_blank">ABB — Tensão, corrente e resistência</a> (circuito fechado: ida e volta da corrente).</li>
+      <li id="r2"><a href="https://www.mundodaeletrica.com.br/qual-a-cor-correta-dos-cabos-eletricos-como-identificar/" target="_blank">Mundo da Elétrica — Cores corretas dos cabos (NBR 5410)</a> (azul-claro e verde/verde-amarelo reservados; fase livre).</li>
+      <li id="r3"><a href="https://www.paulobrites.com.br/" target="_blank">Paulo Brites — eletricista</a> (“nunca confie na cor do fio”).</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.q').forEach(function(q){
+    var correct = +q.dataset.correct;
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    var notes = [
+      'A fase é a única que, sozinha, te dá choque.',
+      'Azul-claro é exclusivo do neutro pela norma.',
+      'Exato: cor é pista, teste é garantia.',
+      'Em uso normal ele não conduz — só age no defeito.'
+    ];
+    opts.forEach(function(opt, i){
+      opt.addEventListener('click', function(){
+        opts.forEach(function(o){ o.disabled = true; o.style.cursor='default'; });
+        var qn = Array.prototype.indexOf.call(q.parentNode.querySelectorAll('.q'), q);
+        if(i === correct){
+          opt.classList.add('right');
+          fb.textContent = '✓ Isso! ' + (notes[qn] || 'Fixado.');
+          fb.className = 'fb ok';
+        } else {
+          opt.classList.add('wrong');
+          opts[correct].classList.add('right');
+          fb.textContent = '✗ A resposta certa está em verde. Releia a seção acima e entenda o porquê.';
+          fb.className = 'fb no';
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Anotações pessoais de aprendizado — NÃO publicar (qualquer curso)
+**/MISSION.md
+**/NOTES.md
+**/RESOURCES.md
+**/GLOSSARY.md
+**/learning-records/
+
+# Internos do workspace / ferramentas (qualquer curso)
+**/.claude/
+**/.agents/
+**/skills-lock.json
+.DS_Store

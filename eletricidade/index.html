@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eletricidade Doméstica — Curso</title>
+<meta name="theme-color" content="#9a3412">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eletricidade">
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:34rem;margin:0 auto;padding:2.2rem 1.15rem 4rem}
+  header{text-align:center;margin-bottom:1.8rem}
+  .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:800}
+  h1{font-family:Georgia,serif;font-size:1.85rem;line-height:1.15;margin:.3rem 0 .3rem}
+  .tag{color:var(--soft);font-size:.95rem;margin:0}
+  .badge{display:inline-block;background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;
+    padding:.15rem .6rem;border-radius:999px;margin-top:.7rem;letter-spacing:.03em}
+  .section-h{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);
+    font-weight:800;margin:2.2rem .2rem .7rem}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--rule);border-radius:14px;padding:1.05rem 1.15rem;margin-bottom:.8rem;
+    transition:transform .08s ease, box-shadow .12s ease;-webkit-tap-highlight-color:transparent}
+  a.card:active{transform:scale(.985)}
+  a.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);border-color:var(--soft)}
+  .card .num{font-family:Georgia,serif;font-size:.8rem;color:var(--accent);font-weight:700;letter-spacing:.05em}
+  .card .t{font-family:Georgia,serif;font-size:1.18rem;font-weight:700;margin:.15rem 0 .2rem;line-height:1.2}
+  .card .d{font-size:.9rem;color:var(--soft);margin:0}
+  .card .go{display:inline-block;margin-top:.6rem;font-size:.82rem;font-weight:700;color:var(--accent)}
+  a.card.ref{background:#f1f7fc;border-color:#cfe3f2}
+  a.card.ref .num,a.card.ref .go{color:var(--water)}
+  a.card.soon{opacity:.6;pointer-events:none}
+  a.card.soon .go{color:var(--soft)}
+  .tip{font-size:.82rem;color:var(--soft);background:#f3efe2;border-radius:12px;padding:.9rem 1.05rem;margin-top:1.6rem}
+  .tip b{color:var(--ink)}
+  footer{text-align:center;margin-top:2.5rem;font-size:.78rem;color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kick">Curso Pessoal</div>
+    <h1>⚡ Eletricidade Doméstica</h1>
+    <p class="tag">Reparos pequenos, com segurança — casa 220&nbsp;V</p>
+    <div class="badge">🔒 Segurança sempre em primeiro lugar</div>
+  </header>
+
+  <div class="section-h">Lições</div>
+
+  <a class="card" href="lessons/0001-tensao-corrente-potencia.html">
+    <div class="num">LIÇÃO 01</div>
+    <div class="t">O que realmente corre nos seus fios</div>
+    <p class="d">Tensão, corrente e potência — o modelo mental (analogia da água) e a fórmula P = V × I. Com quiz.</p>
+    <span class="go">Começar →</span>
+  </a>
+
+  <a class="card" href="lessons/0002-fase-neutro-terra.html">
+    <div class="num">LIÇÃO 02</div>
+    <div class="t">Os três fios da sua casa</div>
+    <p class="d">Fase, neutro e terra: o que cada um faz, o código de cores da NBR 5410, e a regra de ouro — nunca confie na cor.</p>
+    <span class="go">Começar →</span>
+  </a>
+
+  <div class="section-h">Referência rápida</div>
+
+  <a class="card ref" href="reference/grandezas-eletricas.html">
+    <div class="num">CARTÃO</div>
+    <div class="t">🗂 Grandezas elétricas</div>
+    <p class="d">Tabela de tensão / corrente / potência + exemplos a 220 V. Feito pra consultar rápido e imprimir.</p>
+    <span class="go">Abrir →</span>
+  </a>
+
+  <a class="card ref" href="reference/fios-cores-funcao.html">
+    <div class="num">CARTÃO</div>
+    <div class="t">🔌 Fios: função e cor</div>
+    <p class="d">Fase, neutro e terra — o que cada um faz e o código de cores da NBR 5410, num relance.</p>
+    <span class="go">Abrir →</span>
+  </a>
+
+  <div class="tip">
+    📱 <b>Dica:</b> no seu celular, toque em <b>Compartilhar → Adicionar à Tela de Início</b>. Assim o curso vira um ícone, como um app.
+  </div>
+
+  <footer>
+    Curso montado com seu professor de IA · atualizado a cada lição nova
+  </footer>
+
+</div>
+</body>
+</html>
