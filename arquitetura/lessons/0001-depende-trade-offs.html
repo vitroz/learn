@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 01 — "Depende": arquitetura é trade-offs</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#dcd9ce; --accent:#3730a3;
+    --soft:#6b6657; --code:#312e81; --warnbg:#eef2ff; --warn:#3730a3;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 2rem}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#ececfb;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  .law{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:1.1rem 1.3rem;margin:1.3rem 0;
+    text-align:center;font-size:1.2rem;font-weight:700}
+  .law small{display:block;font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;color:var(--soft);
+    font-weight:400;margin-top:.5rem;letter-spacing:.03em}
+  .scale{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--rule);border-radius:8px;
+    overflow:hidden;margin:1.3rem 0;font-family:-apple-system,system-ui,sans-serif;font-size:.86rem}
+  .scale>div{padding:.9rem 1.1rem}
+  .scale .h{background:#f3efe2;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);
+    border-bottom:1px solid var(--rule);font-weight:700}
+  .scale .l{border-right:1px solid var(--rule)}
+  .adr{border-left:3px solid var(--accent);background:#f5f6ff;padding:.8rem 1.1rem;margin:1.2rem 0;border-radius:0 6px 6px 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.88rem}
+  .adr b{color:var(--accent)}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#a5b4fc}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  @media (max-width:480px){ .scale{grid-template-columns:1fr} .scale .l{border-right:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Arquitetura de Software · Lição 01 · Fundamento</p>
+  <h1>"Depende": arquitetura é a disciplina dos trade-offs</h1>
+  <p class="sub">Por que "it depends" é a resposta honesta — e como pesar forças em vez de copiar receita.</p>
+
+  <p class="lead">As "partes difíceis" da arquitetura são difíceis por um motivo só: <b>não existe best practice, só trade-off</b>. O trabalho do arquiteto não é aplicar uma receita — é <i>descobrir e pesar as forças em conflito</i> no contexto do problema.<sup><a href="#r2">2</a></sup> Esta lição te dá o alicerce do livro de Richards & Ford e a ferramenta pra registrar decisões (ADR).</p>
+
+  <h2>A 1ª Lei da Arquitetura</h2>
+  <div class="law">
+    “Tudo em arquitetura é um trade-off.”
+    <small>Corolário: se algo parece não ter trade-off, você só ainda não o identificou. — Richards &amp; Ford<sup><a href="#r1" style="color:var(--soft)">1</a></sup></small>
+  </div>
+  <p>Por isso a resposta honesta a quase toda pergunta de arquitetura é <b>"depende"</b> — não é evasão, é reconhecer que a resposta certa é função do contexto. E é por isso que <b>"best practices" são suspeitas</b>: uma prática é uma recomendação sem contexto; se tudo é trade-off, o que é "ótimo" num contexto é nocivo em outro.<sup><a href="#r2">2</a></sup></p>
+
+  <h2>Arquitetura ≠ design</h2>
+  <div class="scale">
+    <div class="h l">Arquitetura</div>
+    <div class="h">Design</div>
+    <div class="l">Decisões estruturalmente significativas e <b>caras de reverter</b>.<br><i>Ex.: separar billing em serviço próprio.</i></div>
+    <div>Decisões <b>baratas de mudar</b> depois.<br><i>Ex.: qual gem de serialização usar.</i></div>
+  </div>
+  <p>A heurística prática: <b>quanto mais difícil de mudar, mais é arquitetura</b> — e mais disciplinada deve ser sua análise antes de decidir. Daí a 2ª Lei: <b>"o <i>porquê</i> importa mais que o <i>como</i>"</b>.<sup><a href="#r1">1</a></sup></p>
+
+  <h2>Análise de trade-off, em 4 passos</h2>
+  <p>1. Ache as <b>dimensões acopladas</b> (o que varia junto — ex.: coupling × deploy independente). &nbsp;2. Analise <b>como elas se trocam</b>. &nbsp;3. Avalie no <b>seu</b> contexto — não no da indústria. &nbsp;4. <b>Registre</b> a decisão e o porquê num ADR.</p>
+
+  <div class="adr">
+    <p style="margin:.1rem 0"><b>ADR — Architecture Decision Record</b><sup><a href="#r3">3</a></sup>: um documento curto por decisão. Forma mínima:</p>
+    <p style="margin:.4rem 0 0"><b>Título</b> · <b>Status</b> · <b>Contexto</b> · <b>Decisão</b> · <b>Consequências</b> (os trade-offs que você aceitou). O ato de escrever <i>é</i> a disciplina — força o "porquê" pra fora.</p>
+  </div>
+
+  <div class="safety">
+    <div class="t">⚠ Exemplo (Rails, relatável)</div>
+    Extrair <b>billing</b> do monólito para um serviço próprio? Não há best practice. <b>A favor:</b> deploy independente, isolamento de falha, autonomia de time. <b>Contra:</b> transação distribuída, latência de rede, teste local mais difícil, custo operacional. A 1ª Lei diz: é um trade-off, ponto — <b>depende</b> do tamanho do time, da cadência de deploy e de quão acoplados os dados realmente estão. Como é caro de reverter (é arquitetura), merece um ADR cujo "Consequências" diga: <i>"aceitamos a complexidade de transação distribuída em troca de deploy independente de billing."</i>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="arquitetura" data-lesson="0001" data-title="Lição 01 — Trade-offs e “depende”">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="1" data-note="É a 1ª Lei declarada por eles; trade-offs são inevitáveis.">
+      <p>1. Qual é a 1ª Lei da Arquitetura, segundo Richards &amp; Ford?</p>
+      <button class="opt">Toda arquitetura deve usar microserviços</button>
+      <button class="opt">Tudo em arquitetura é um trade-off</button>
+      <button class="opt">Toda decisão deve ser documentada antes</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Se tudo é trade-off, 'melhor' só vale dentro de um contexto.">
+      <p>2. Por que "best practices" sem contexto são suspeitas em arquitetura?</p>
+      <button class="opt">Porque o que serve a um contexto prejudica outro</button>
+      <button class="opt">Porque a maioria já está desatualizada</button>
+      <button class="opt">Porque juniores as adotam rápido demais</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Arquitetura é o que é caro de reverter; design muda barato.">
+      <p>3. O que melhor distingue uma decisão de arquitetura de uma de design?</p>
+      <button class="opt">Ela está escrita num documento formal</button>
+      <button class="opt">Ela é tomada por um arquiteto sênior</button>
+      <button class="opt">Ela é significativa e cara de mudar depois</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Assista <a href="https://www.youtube.com/watch?v=XI1lg8ZCrpA" target="_blank">Neal Ford — “Understanding Modern Trade-off Analysis in Software Architecture”</a> (uma sentada): a tese direto de um dos autores. Depois, o Capítulo 1 de <a href="https://www.oreilly.com/library/view/software-architecture-the/9781492086888/" target="_blank">“The Hard Parts”</a>.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Quer pegar uma decisão real do smile-core, listar os trade-offs dos dois lados e escrever o primeiro ADR juntos? <b>Me pergunte no chat.</b>
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 02):</b> as "partes difíceis" de fato — granularidade de serviços: quando dividir e quando juntar, como trade-off.
+  </p>
+
+  <div class="footer-nav">
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://www.oreilly.com/library/view/fundamentals-of-software/9781098175504/" target="_blank">Richards &amp; Ford — Fundamentals of Software Architecture</a> (as duas leis).</li>
+      <li id="r2"><a href="https://www.youtube.com/watch?v=XI1lg8ZCrpA" target="_blank">Neal Ford — Understanding Modern Trade-off Analysis</a>.</li>
+      <li id="r3"><a href="https://martinfowler.com/bliki/ArchitectureDecisionRecord.html" target="_blank">Martin Fowler — Architecture Decision Record</a> (crédito a Michael Nygard).</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

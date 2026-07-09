@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arquitetura de Software — Curso</title>
+<meta name="theme-color" content="#3730a3">
+<style>
+  :root{--ink:#1a1a17;--paper:#fdfcf8;--rule:#d9d4c5;--accent:#3730a3;--soft:#6b6657;--card:#fff;--water:#3730a3}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:34rem;margin:0 auto;padding:2.2rem 1.15rem 4rem}
+  a.back{font-size:.85rem;color:var(--soft);text-decoration:none}
+  header{text-align:center;margin:.8rem 0 1.6rem}
+  .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:800}
+  h1{font-family:Georgia,serif;font-size:1.8rem;line-height:1.15;margin:.3rem 0}
+  .tag{color:var(--soft);font-size:.95rem;margin:0}
+  .section-h{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:2rem .2rem .7rem}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--rule);
+    border-radius:14px;padding:1.05rem 1.15rem;margin-bottom:.8rem;transition:transform .08s,box-shadow .12s;-webkit-tap-highlight-color:transparent}
+  a.card:active{transform:scale(.985)}
+  a.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);border-color:var(--soft)}
+  .card .num{font-family:Georgia,serif;font-size:.8rem;color:var(--accent);font-weight:700;letter-spacing:.05em}
+  .card .t{font-family:Georgia,serif;font-size:1.18rem;font-weight:700;margin:.15rem 0 .2rem;line-height:1.2}
+  .card .d{font-size:.9rem;color:var(--soft);margin:0}
+  .card .go{display:inline-block;margin-top:.6rem;font-size:.82rem;font-weight:700;color:var(--accent)}
+  a.card.ref{background:#f5f6ff;border-color:#d6daf7}
+  a.card.ref .num,a.card.ref .go{color:var(--water)}
+  a.card.soon{opacity:.55;pointer-events:none}
+  .tip{font-size:.82rem;color:var(--soft);background:#f3efe2;border-radius:12px;padding:.9rem 1.05rem;margin-top:1.6rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Meus cursos</a>
+  <header>
+    <div class="kick">Curso</div>
+    <h1>🏛️ Arquitetura de Software</h1>
+    <p class="tag">As partes difíceis — Mark Richards &amp; Neal Ford</p>
+  </header>
+
+  <div class="section-h">Lições</div>
+
+  <a class="card" href="lessons/0001-depende-trade-offs.html">
+    <div class="num">LIÇÃO 01</div>
+    <div class="t">"Depende": arquitetura é trade-offs</div>
+    <p class="d">Por que não há best practice, só trade-off — e como registrar decisões num ADR. Com quiz.</p>
+    <span class="go">Começar →</span>
+  </a>
+
+  <a class="card soon">
+    <div class="num">LIÇÃO 02 · em breve</div>
+    <div class="t">Granularidade de serviços</div>
+    <p class="d">Quando dividir e quando juntar — como trade-off, não como default.</p>
+    <span class="go">Em breve</span>
+  </a>
+
+  <div class="section-h">Acompanhamento</div>
+  <a class="card ref" href="../progresso/">
+    <div class="num">PROGRESSO</div>
+    <div class="t">📊 Meu progresso</div>
+    <p class="d">Seu desempenho nos quizzes — e o botão pra enviar pro professor.</p>
+    <span class="go">Abrir →</span>
+  </a>
+
+  <div class="tip">📱 <b>Dica:</b> adicione o hub à tela de início do celular pra estudar como um app.</div>
+</div>
+</body>
+</html>

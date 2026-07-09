@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 01 — Explorar → Planejar → Codar → Verificar</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#dcd9ce; --accent:#6d28d9;
+    --soft:#6b6657; --code:#4c1d95; --warnbg:#f5f3ff; --warn:#5b21b6;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 2rem}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#f0ecfa;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  .cycle{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1.4rem 0;
+    font-family:-apple-system,system-ui,sans-serif}
+  .cycle .step{background:#f0ecfa;border-radius:10px;padding:.8rem .6rem;text-align:center}
+  .cycle .n{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .cycle .t{font-weight:700;font-size:.95rem;margin:.2rem 0}
+  .cycle .d{font-size:.72rem;color:var(--soft);line-height:1.3}
+  .practice{border-left:3px solid var(--accent);background:#faf8ff;padding:.7rem 1.1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .practice b{color:var(--accent)}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#c4b5fd}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  @media (max-width:560px){ .cycle{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Claude Code · Lição 01 · Práticas</p>
+  <h1>Explorar → Planejar → Codar → Verificar</h1>
+  <p class="sub">Dirija o agente com contexto explícito, em vez de torcer por um prompt "one-shot".</p>
+
+  <p class="lead">Você já usa o Claude Code todo dia. A diferença entre um resultado medíocre e um ótimo quase nunca está no modelo — está em <b>como você dirige o loop</b>. O Claude Code funciona como um loop agêntico: reunir contexto → agir → verificar → repetir.<sup><a href="#r2">2</a></sup> Seu trabalho de sênior não é escrever o código; é <b>guiar esse loop</b> com intenção. Esta lição te dá o ciclo que faz isso.</p>
+
+  <h2>O ciclo em quatro fases</h2>
+  <div class="cycle">
+    <div class="step"><div class="n">1 · Explorar</div><div class="t">Ler, não tocar</div><div class="d">Em plan mode. Deixe o Claude ler arquivos e tirar dúvidas. Custa quase nada e evita resolver o problema errado.</div></div>
+    <div class="step"><div class="n">2 · Planejar</div><div class="t">Plano escrito</div><div class="d">Um plano de implementação, revisado e editado por você. É seu contrato com o Claude.</div></div>
+    <div class="step"><div class="n">3 · Codar</div><div class="t">Executar</div><div class="d">Só agora edita arquivos, seguindo o plano.</div></div>
+    <div class="step"><div class="n">4 · Verificar</div><div class="t">Fechar o loop</div><div class="d">Dê um sinal que ele leia: testes, build, lint, screenshot.</div></div>
+  </div>
+  <p>O erro clássico é <b>colapsar as quatro fases num prompt só</b>. Separá-las é o que troca adivinhação por direção.<sup><a href="#r1">1</a></sup></p>
+
+  <h2>Três práticas concretas</h2>
+
+  <div class="practice">
+    <p><b>1. Use plan mode para mudanças multi-arquivo.</b> Aperte <code>Shift+Tab</code> duas vezes, peça pro Claude ler os arquivos relevantes e produzir um plano escrito. Revise o plano, edite pra adicionar restrições — e <i>só então</i> mude pra code mode e implemente.<sup><a href="#r1">1</a></sup></p>
+  </div>
+  <div class="practice">
+    <p><b>2. Escope o prompt: arquivos, restrições e saída esperada.</b> Em vez de "adicione testes para <code>foo.rb</code>", diga: "Escreva um teste para <code>foo.rb</code> cobrindo o caso do usuário deslogado. Sem mocks." Aponte para a <i>fonte</i>, não para o conceito.<sup><a href="#r1">1</a></sup></p>
+  </div>
+  <div class="practice">
+    <p><b>3. Sempre dê um sinal de verificação.</b> Testes, script, lint ou screenshot que o Claude possa <i>rodar</i>. Sem isso, ele para quando <i>parece</i> pronto — e você vira o loop de feedback. Com um check, ele roda, lê o resultado e itera sozinho até passar.<sup><a href="#r1">1</a></sup></p>
+  </div>
+
+  <div class="safety">
+    <div class="t">⚡ Por que isso importa (a janela de contexto)</div>
+    A janela de contexto enche rápido — cada leitura e saída consome tokens; quando enche, o desempenho cai e instruções antigas se perdem.<sup><a href="#r2">2</a></sup> As três práticas acima também <b>economizam contexto</b>. Para escalar além de uma sessão: <b>subagents</b> (contexto isolado)<sup><a href="#r3">3</a></sup> e <b>skills</b> (conhecimento sob demanda, sem inchar o CLAUDE.md).<sup><a href="#r4">4</a></sup>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="claude-code" data-lesson="0001" data-title="Lição 01 — Explorar → Planejar → Codar → Verificar">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="1" data-note="Plan mode separa exploração de execução — vira um contrato pra executar.">
+      <p>1. Antes de editar arquivos numa mudança multi-arquivo (ex.: OAuth), o que fazer primeiro?</p>
+      <button class="opt">Ler tudo e planejar de cabeça</button>
+      <button class="opt">Plan mode: pedir o plano, revisar e refinar</button>
+      <button class="opt">Pedir um resumo e já começar a codar</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Prompt vago não diz o que é 'bom'. Escopo + rodar os testes fecha o loop.">
+      <p>2. Você pediu "adicione testes ao pagamento" e faltou um caso crítico. O que faltou?</p>
+      <button class="opt">Nada: era tarefa grande demais mesmo</button>
+      <button class="opt">Dar casos de borda no prompt e mandar rodar</button>
+      <button class="opt">Ter discutido a estratégia em plan mode</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Sem check automático, você vira o loop. Com ele, o Claude fecha sozinho.">
+      <p>3. O código parece pronto, mas você não sabe se funciona. Melhor passo?</p>
+      <button class="opt">Pedir que ele explique a implementação</button>
+      <button class="opt">Dar um check que ele roda e iterar sozinho</button>
+      <button class="opt">Revisar linha a linha e, se ok, subir</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://code.claude.com/docs/en/best-practices.md" target="_blank">Best practices for Claude Code (Anthropic)</a> — seções "Explore first, then plan, then code", "Provide specific context" e "Give Claude a way to verify its work". ~5 min.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Quer ver isso aplicado a um caso real do smile-core — um refactor multi-arquivo, um plano bom vs. ruim, ou como escrever o sinal de verificação? <b>Me pergunte no chat.</b>
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 02):</b> prompts escopados na prática — anatomia de um bom prompt e como apontar para a fonte, não para o conceito.
+  </p>
+
+  <div class="footer-nav">
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://code.claude.com/docs/en/best-practices.md" target="_blank">Anthropic — Best practices for Claude Code</a>.</li>
+      <li id="r2"><a href="https://code.claude.com/docs/en/how-claude-code-works.md" target="_blank">Anthropic — How Claude Code works</a> (loop agêntico e janela de contexto).</li>
+      <li id="r3"><a href="https://code.claude.com/docs/en/sub-agents.md" target="_blank">Anthropic — Subagents</a>.</li>
+      <li id="r4"><a href="https://code.claude.com/docs/en/skills.md" target="_blank">Anthropic — Skills</a>.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

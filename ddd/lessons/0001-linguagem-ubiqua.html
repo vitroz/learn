@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 01 — Linguagem Ubíqua</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#dcd9ce; --accent:#0f766e;
+    --soft:#6b6657; --code:#115e59; --warnbg:#f0fdfa; --warn:#115e59;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 2rem}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#e6f5f2;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  blockquote{border-left:3px solid var(--accent);margin:1.2rem 0;padding:.4rem 1.1rem;color:#334;
+    font-style:italic;background:#f0fdfa;border-radius:0 6px 6px 0}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--rule);border-radius:8px;
+    overflow:hidden;margin:1.3rem 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
+  .compare>div{padding:.9rem 1rem}
+  .compare .h{background:#f3efe2;font-family:-apple-system,system-ui,sans-serif;font-size:.68rem;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--rule);font-weight:700}
+  .compare .l{border-right:1px solid var(--rule)}
+  .bad{color:#b91c1c} .good{color:#15803d}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#5eead4}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  @media (max-width:480px){ .compare{grid-template-columns:1fr} .compare .l{border-right:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Lição 01 · Estratégico</p>
+  <h1>Linguagem Ubíqua</h1>
+  <p class="sub">Faça o código falar as palavras do negócio — a ideia que destrava o DDD.</p>
+
+  <p class="lead">DDD costuma ser confundido com "entidades + repositórios". Mas Eric Evans, revisitando o próprio livro, coloca o design <b>estratégico</b> — Linguagem Ubíqua, Bounded Context, Core Domain — no centro, com os building blocks apenas "em órbita".<sup><a href="#r3">3</a></sup> A Linguagem Ubíqua é a porta de entrada: não exige framework nenhum, é usável na próxima daily, e sem ela você nem consegue traçar um contexto ou nomear um aggregate.</p>
+
+  <h2>O que é</h2>
+  <blockquote>Uma linguagem comum e rigorosa, construída entre desenvolvedores e usuários, baseada no <b>domain model</b> usado no software — rigorosa porque "software não lida bem com ambiguidade".<sup><a href="#r1">1</a></sup></blockquote>
+  <p>É <i>uma</i> língua só, falada por especialistas de negócio e devs, presente na conversa <b>e</b> escrita no código, nos testes e nos diagramas. Modelo e linguagem são o <b>mesmo artefato</b>: testar a linguagem conversando com o especialista <i>é</i> testar o modelo.<sup><a href="#r1">1</a></sup></p>
+
+  <h2>Por que importa</h2>
+  <p>Quando o código diz <code>status = 2</code> mas o negócio diz "a recompensa foi <i>resgatada</i>", alguém paga o custo da tradução em toda leitura, todo bug, todo onboarding. Esse buraco entre a fala e o código é onde os defeitos se criam.</p>
+
+  <div class="compare">
+    <div class="h l">❌ Fala "banco de dados"</div>
+    <div class="h">✅ Fala o negócio</div>
+    <div class="l bad">PointsTransaction<br>&nbsp;&nbsp;type: 1 | 2 | 3<br>&nbsp;&nbsp;status: 2</div>
+    <div class="good">PointsEarned<br>Redemption<br>PointsExpired</div>
+  </div>
+  <p>Um <code>PointsTransaction</code> que mistura "cliente ganhou pontos", "resgatou recompensa" e "pontos expiraram" é um saco ambíguo. Deixe os <i>verbos do especialista</i> guiarem o código — os nomes das classes viram as mesmas palavras ditas na daily.</p>
+
+  <h2>Como conecta com Bounded Context</h2>
+  <p>Uma Linguagem Ubíqua só é unívoca <b>dentro de uma fronteira</b>.<sup><a href="#r2">2</a></sup> No smile-core, pegue a palavra <b>"Points"</b>: no contexto de <i>Earning</i>, é o que o cliente acumula; no de <i>Billing</i>, pode ser uma métrica de uso que define o quanto o lojista paga. Mesma palavra, dois modelos. <b>O momento em que a mesma palavra significa coisas diferentes é onde nasce uma fronteira de contexto.</b><sup><a href="#r2">2</a></sup></p>
+
+  <div class="safety">
+    <div class="t">⚠ A armadilha em Rails: Anemic Domain Model</div>
+    Um objeto <code>Reward</code> só com getters/setters, e toda a lógica num service object, é um <a href="https://martinfowler.com/bliki/AnemicDomainModel.html" target="_blank">Anemic Domain Model</a>:<sup><a href="#r4">4</a></sup> <i>parece</i> falar a linguagem, mas não carrega comportamento. Fowler chama de design procedural fantasiado de OO — derrota o propósito do modelo. É o estilo padrão de "fat service objects sobre ActiveRecord passivo". Cuidado.
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="ddd" data-lesson="0001" data-title="Lição 01 — Linguagem Ubíqua">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="0" data-note="É linguagem humana+código ligada ao modelo — não ferramenta.">
+      <p>1. O que é uma Linguagem Ubíqua no DDD?</p>
+      <button class="opt">Língua rigorosa, do modelo, de experts e devs</button>
+      <button class="opt">Uma DSL que gera migrations do banco sozinha</button>
+      <button class="opt">Um style guide de código imposto por linters</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Linguagem e modelo são um só artefato; o código precisa falá-la.">
+      <p>2. Onde a Linguagem Ubíqua precisa de fato aparecer?</p>
+      <button class="opt">Só nos requisitos, antes do desenvolvimento</button>
+      <button class="opt">Nas conversas e no código, testes e modelos</button>
+      <button class="opt">Só nos diagramas que o arquiteto mantém</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Mudança de linguagem/cultura é o que desenha a fronteira do contexto.">
+      <p>3. Qual a relação entre Linguagem Ubíqua e Bounded Context?</p>
+      <button class="opt">O contexto elimina a necessidade de linguagem</button>
+      <button class="opt">Todos os contextos compartilham a mesma língua</button>
+      <button class="opt">A língua só é unívoca dentro de um contexto</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://martinfowler.com/bliki/UbiquitousLanguage.html" target="_blank">Martin Fowler — “Ubiquitous Language”</a> (~5 min): a formulação mais enxuta e correta, atribuída a Evans. Depois, veja <a href="https://www.infoq.com/presentations/ddd-eric-evans/" target="_blank">Evans — “What I've Learned About DDD Since the Book” (InfoQ)</a> para entender por que ela está no centro.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Quer pegar um termo real do smile-core (Points, Reward, Transaction…) e desenhar a Linguagem Ubíqua dele — e onde estão as fronteiras de contexto? <b>Me pergunte no chat.</b>
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 02):</b> Bounded Context — como e onde traçar as fronteiras quando a mesma palavra começa a significar coisas diferentes.
+  </p>
+
+  <div class="footer-nav">
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://martinfowler.com/bliki/UbiquitousLanguage.html" target="_blank">Martin Fowler — Ubiquitous Language</a>.</li>
+      <li id="r2"><a href="https://martinfowler.com/bliki/BoundedContext.html" target="_blank">Martin Fowler — Bounded Context</a>.</li>
+      <li id="r3"><a href="https://www.infoq.com/presentations/ddd-eric-evans/" target="_blank">Eric Evans — What I've Learned About DDD Since the Book (InfoQ, 2009)</a>.</li>
+      <li id="r4"><a href="https://martinfowler.com/bliki/AnemicDomainModel.html" target="_blank">Martin Fowler — Anemic Domain Model</a>.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
