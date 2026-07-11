@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 04 — Trocar uma tomada</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --warn:#92400e; --warnbg:#fef3c7;
+    --fase:#b91c1c; --neutro:#1d6fb8; --terra:#15803d; --ok:#15803d;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif; font-size:.72rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 .4rem}
+  h1{font-size:2rem; line-height:1.15; margin:0 0 .3rem; font-weight:700}
+  .sub{color:var(--soft); font-style:italic; margin:0 0 2rem}
+  h2{font-size:1.28rem; margin:2.6rem 0 .6rem; border-bottom:1px solid var(--rule); padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  .recall{border-left:3px solid var(--soft); background:#f3efe2; padding:.7rem 1.1rem; margin:1.3rem 0;
+    border-radius:0 6px 6px 0; font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .recall b{color:var(--ink)}
+  .gate{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .gate .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .gate p{margin:.45rem 0 0; font-size:1rem}
+  /* tomada svg-ish */
+  .socket{display:flex; gap:1.4rem; align-items:center; flex-wrap:wrap; justify-content:center;
+    background:#fff; border:1px solid var(--rule); border-radius:12px; padding:1.4rem; margin:1.4rem 0}
+  .face{width:120px; height:120px; border-radius:50%; background:#f3efe2; border:2px solid var(--rule);
+    position:relative; flex:0 0 auto}
+  .hole{position:absolute; width:12px; height:26px; background:#1a1a17; border-radius:4px}
+  .hole.l{top:34px; left:34px; transform:rotate(0)}
+  .hole.r{top:34px; right:34px}
+  .hole.g{width:22px; height:22px; border-radius:50%; bottom:20px; left:49px}
+  .legend{font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; min-width:12rem}
+  .legend div{margin:.35rem 0; display:flex; align-items:center; gap:.5rem}
+  .chip{width:.9rem; height:.9rem; border-radius:3px; flex:0 0 auto; border:1px solid rgba(0,0,0,.15)}
+  /* passos numerados */
+  .steps{margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .step{display:grid; grid-template-columns:auto 1fr; gap:0 1rem; align-items:start;
+    border:1px solid var(--rule); border-radius:9px; padding:.9rem 1.1rem; margin:.7rem 0; background:#fff}
+  .step .n{width:2rem; height:2rem; border-radius:50%; background:var(--accent); color:#fff;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1rem; margin-top:.1rem}
+  .step.zero .n{background:var(--warn)}
+  .step h3{margin:0 0 .2rem; font-size:1.06rem}
+  .step p{margin:.15rem 0 0; font-size:.95rem; line-height:1.5}
+  .safety{border-left:3px solid var(--warn); background:var(--warnbg); padding:.9rem 1.1rem;
+    margin:1.4rem 0; border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif; font-weight:700; color:var(--warn);
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem}
+  .golden{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .golden .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .golden p{margin:.45rem 0 0; font-size:1rem}
+  .stop{border:2px solid var(--fase); background:#fee2e2; border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .stop .t{font-weight:700; color:var(--fase); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .stop ul{margin:.5rem 0 0; padding-left:1.1rem} .stop li{margin:.25rem 0; font-size:.95rem}
+  sup a{font-size:.7rem; text-decoration:none; color:var(--accent); font-weight:700}
+  /* quiz */
+  .quiz{font-family:-apple-system,system-ui,sans-serif; border:1px solid var(--rule);
+    border-radius:10px; padding:1.3rem 1.4rem; margin:1.6rem 0; background:#fff}
+  .quiz h3{margin:0 0 .2rem; font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600; margin:0 0 .55rem; font-family:inherit}
+  .opt{display:block; width:100%; text-align:left; border:1px solid var(--rule); background:#fafaf6;
+    padding:.6rem .85rem; margin:.4rem 0; border-radius:7px; cursor:pointer; font-size:.95rem;
+    font-family:inherit; transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7; border-color:#16a34a; color:#14532d; font-weight:600}
+  .opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+  .fb{font-size:.86rem; margin-top:.5rem; min-height:1.1rem; color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .footer-nav{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; color:var(--soft)}
+  .footer-nav a{display:inline-block; margin-right:1.2rem}
+  .ask{background:#1a1a17; color:#fdfcf8; border-radius:10px; padding:1.1rem 1.3rem; margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.95rem}
+  .ask b{color:#fbbf24}
+  .refs{font-family:-apple-system,system-ui,sans-serif; font-size:.82rem; color:var(--soft); margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  .primary{border:1px dashed var(--accent); border-radius:8px; padding:1rem 1.2rem; margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .primary .t{font-weight:700; color:var(--accent); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase}
+  @media print{ body{background:#fff} .quiz,.ask{break-inside:avoid} .opt{cursor:default} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Lição 04 · Prática · Casa 220&nbsp;V</p>
+  <h1>Trocar uma tomada, do jeito certo</h1>
+  <p class="sub">Sua primeira reforma de verdade. Anatomia da tomada, qual fio vai em cada terminal, e o aperto que evita incêndio.</p>
+
+  <div class="gate">
+    <div class="t">🔒 Pré-requisito obrigatório</div>
+    <p>Esta lição só é segura se você já domina a <a href="0003-desenergizar-com-seguranca.html">Lição 03</a>. O <b>passo zero</b> de tudo aqui é: desenergizar e <b>comprovar que está morto</b> (vivo → morto → vivo). Se essa sequência ainda não é automática pra você, volte uma lição.</p>
+  </div>
+
+  <div class="recall">
+    <b>Recuperando a Lição 02:</b> os três fios — <span style="color:var(--fase);font-weight:700">fase</span> (perigoso), <span style="color:var(--neutro);font-weight:700">neutro</span> (retorno) e <span style="color:var(--terra);font-weight:700">terra</span> (proteção, verde ou verde-amarelo). Você vai reencontrar os três aqui atrás, agora nos terminais de uma tomada.
+  </div>
+
+  <h2>Anatomia de uma tomada 220&nbsp;V</h2>
+  <p>O padrão brasileiro (NBR 14136) tem <b>três furos</b>: dois para fase e neutro, e o do meio-embaixo, redondo, para o <b>terra</b>.<sup><a href="#r1">1</a></sup> Atrás, há um terminal (parafuso) para cada fio.</p>
+
+  <div class="socket">
+    <div class="face" aria-hidden="true">
+      <span class="hole l"></span>
+      <span class="hole r"></span>
+      <span class="hole g"></span>
+    </div>
+    <div class="legend">
+      <div><span class="chip" style="background:#b91c1c"></span> <b>Fase</b> — furo lateral</div>
+      <div><span class="chip" style="background:#1d6fb8"></span> <b>Neutro</b> — outro furo lateral</div>
+      <div><span class="chip" style="background:linear-gradient(135deg,#15803d 0 50%,#facc15 50%)"></span> <b>Terra</b> — furo redondo, embaixo</div>
+    </div>
+  </div>
+
+  <p>Numa tomada simples, <b>fase e neutro podem ir em qualquer um dos dois terminais laterais</b> — a tomada funciona igual. O que <b>não</b> é opcional: o <b>terra</b> tem que ir no terminal de terra (o do pino redondo, normalmente marcado com o símbolo ⏚ ou a cor verde).</p>
+
+  <h2>Passo a passo</h2>
+  <div class="steps">
+    <div class="step zero">
+      <div class="n">0</div>
+      <div>
+        <h3>Desenergize e prove que está morto</h3>
+        <p>Disjuntor desligado, aviso no quadro, e teste vivo → morto → vivo (Lição 03). <b>Nunca</b> comece sem este passo.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <h3>Fotografe antes de soltar</h3>
+        <p>Tire uma foto de como os fios estão ligados. É a sua rede de segurança para remontar igual, caso esqueça.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <h3>Solte os fios e identifique cada um</h3>
+        <p>Afrouxe os parafusos e retire a tomada velha. Identifique o <b>terra</b> pela cor (verde/verde-amarelo). Lembre da regra de ouro: se a cor for duvidosa, o teste é que manda.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div>
+        <h3>Ligue nos terminais certos</h3>
+        <p><b>Terra → terminal de terra</b> (pino redondo). Fase e neutro nos dois laterais. Enfie o cobre todo dentro do terminal — sem fio de cobre aparecendo pra fora.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <div>
+        <h3>Aperte firme</h3>
+        <p>Aperte bem cada parafuso e dê um puxão leve em cada fio: não pode sair nem folgar. Aperto frouxo é a causa nº&nbsp;1 de tomada queimada.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <div>
+        <h3>Remonte, religue e teste</h3>
+        <p>Parafuse a tomada na caixa, coloque o espelho, tire o aviso e religue o disjuntor. Teste um aparelho — e, se tiver detector, confirme que o espelho/parafusos não acusam tensão.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="golden">
+    <div class="t">🔑 A regra de ouro desta lição</div>
+    <p><b>Fio frouxo = calor = incêndio.</b></p>
+    <p>O maior risco de trocar uma tomada não é o choque (você já desenergizou) — é o <b>mau contato</b>. Um fio mal apertado esquenta a cada uso, derrete o plástico e pode pegar fogo dentro da parede, meses depois. Aperte firme e teste puxando.</p>
+  </div>
+
+  <div class="stop">
+    <div class="t">🛑 Pare e chame um profissional se…</div>
+    <ul>
+      <li>Achar fios <b>queimados, derretidos ou ressecados</b> — o problema é maior que a tomada.</li>
+      <li>Houver <b>vários cabos</b> no mesmo terminal ou um emaranhado que você não entende.</li>
+      <li>Não houver fio <b>terra</b> e você não souber como proceder.</li>
+      <li>Em <i>qualquer</i> momento você ficar inseguro. Não tem vergonha nisso — tem segurança.</li>
+    </ul>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="eletricidade" data-lesson="0004" data-title="Lição 04 — Trocar uma tomada">
+    <h3>Pratique agora — sem espiar acima</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa. Clique na resposta.</p>
+
+    <div class="q" data-correct="0" data-note="Segurança primeiro: morto e comprovado.">
+      <p>1. Qual é o passo zero, antes de tudo?</p>
+      <button class="opt">Desenergizar e provar morto</button>
+      <button class="opt">Fotografar a tomada velha</button>
+      <button class="opt">Soltar logo os fios</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Verde/verde-amarelo é sempre o terra.">
+      <p>2. O fio verde-amarelo vai em qual terminal?</p>
+      <button class="opt">No terminal de fase</button>
+      <button class="opt">No terminal de terra</button>
+      <button class="opt">Em qualquer um livre</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Mau contato esquenta e pode pegar fogo.">
+      <p>3. Um fio frouxo no terminal causa o quê?</p>
+      <button class="opt">Só uma tomada solta</button>
+      <button class="opt">Nada de mais grave</button>
+      <button class="opt">Calor e risco de fogo</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Na dúvida ou fio queimado, chame ajuda.">
+      <p>4. Quando você NÃO deve fazer sozinho?</p>
+      <button class="opt">Fios queimados ou confusos</button>
+      <button class="opt">Tomada simples de quarto</button>
+      <button class="opt">Só um circuito comum</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Assista a um passo a passo em vídeo no <a href="https://www.youtube.com/user/MundoDaEletrica" target="_blank">Mundo da Elétrica</a> (procure “como trocar tomada”) antes de fazer pela primeira vez — ver as mãos de alguém fazendo fixa a sequência. Para dúvida real de fiação, o <a href="https://www.reddit.com/r/eletronica/" target="_blank">r/eletronica</a> responde rápido.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Ficou com dúvida na hora — mais de um fio no terminal, não achou o terra, tomada diferente da do desenho? <b>Me mande uma foto e me pergunte no chat</b> antes de religar. Melhor parar no meio do que remontar errado.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 05):</b> o <b>interruptor</b> — parecido, mas com uma diferença importante: ele corta só a <b>fase</b>. E depois, ler o <b>quadro de disjuntores</b>.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0003-desenergizar-com-seguranca.html">← Lição 03</a>
+    <a href="../reference/desenergizar-checklist.html">🗂 Checklist</a>
+    <a href="../reference/fios-cores-funcao.html">🔌 Fios: cor e função</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://www.mundodaeletrica.com.br/qual-a-cor-correta-dos-cabos-eletricos-como-identificar/" target="_blank">Mundo da Elétrica — Cores dos cabos (NBR 5410)</a> (identificação de terra: verde/verde-amarelo).</li>
+    </ol>
+  </div>
+
+</div>
+
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

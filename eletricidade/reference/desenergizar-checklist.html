@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartão de Referência — Desenergizar com segurança</title>
+<style>
+  :root{--ink:#1a1a17;--paper:#fff;--rule:#cbc6b6;--accent:#9a3412;--water:#1d6fb8;--soft:#6b6657;
+    --ok:#15803d;--warn:#92400e;--warnbg:#fef3c7;--fase:#b91c1c}
+  *{box-sizing:border-box}
+  body{margin:0;background:#ece8dc;color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,sans-serif;line-height:1.5}
+  .card{max-width:40rem;margin:1.5rem auto;background:var(--paper);border:1px solid var(--rule);
+    border-radius:10px;padding:2rem 2.2rem;box-shadow:0 2px 14px rgba(0,0,0,.08)}
+  h1{font-size:1.3rem;margin:0 0 .2rem}
+  .sub{color:var(--soft);font-size:.85rem;margin:0 0 1.4rem}
+  h2{font-size:.95rem;margin:1.5rem 0 .5rem;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+  ol.seq{list-style:none;counter-reset:s;padding:0;margin:.6rem 0}
+  ol.seq li{counter-increment:s;position:relative;padding:.6rem 0 .6rem 2.6rem;border-bottom:1px solid var(--rule);font-size:.95rem}
+  ol.seq li:last-child{border-bottom:none}
+  ol.seq li::before{content:counter(s);position:absolute;left:0;top:.55rem;width:1.7rem;height:1.7rem;
+    background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+  ol.seq li.key::before{background:var(--ok)}
+  ol.seq li b{color:var(--ink)}
+  .tag{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);font-weight:700;display:block}
+  ol.seq li.key .tag{color:var(--ok)}
+  .live{background:#f6f2e7;border-radius:8px;padding:.9rem 1rem;margin:1rem 0;font-size:.9rem}
+  .live b{color:var(--ok)}
+  .flow{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin-top:.5rem;font-weight:700;font-size:.85rem}
+  .flow span{padding:.25rem .6rem;border-radius:999px;border:1px solid rgba(0,0,0,.12)}
+  .flow .v{background:#fee2e2;color:#7f1d1d} .flow .m{background:#dcfce7;color:#14532d} .flow .ar{color:var(--soft)}
+  .tools{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.86rem}
+  .tools th,.tools td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  .tools th{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);background:#f6f2e7}
+  .tools .best{color:var(--ok);font-weight:700} .tools .no{color:var(--fase);font-weight:700}
+  .flags{background:var(--warnbg);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1rem 0;font-size:.86rem}
+  .flags b{color:var(--warn)}
+  .note{font-size:.78rem;color:var(--soft);border-left:3px solid var(--rule);padding-left:.8rem;margin:1rem 0}
+  .foot{font-size:.78rem;color:var(--soft);margin-top:1.4rem;border-top:1px solid var(--rule);padding-top:.8rem}
+  .foot a{color:var(--accent)}
+  @media print{body{background:#fff}.card{box-shadow:none;border:none;margin:0}}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🗂 Desenergizar com segurança</h1>
+  <p class="sub">Casa 220&nbsp;V · faça isto antes de tocar em qualquer fio · companheiro das Lições 03 e 04</p>
+
+  <h2>A sequência (NR-10 caseira)</h2>
+  <ol class="seq">
+    <li><span class="tag">Seccionar</span><b>Desligue o disjuntor</b> do circuito. Na dúvida de qual é, desligue o <b>geral</b>.</li>
+    <li><span class="tag">Impedir religamento</span><b>Avise</b> a casa e cole um aviso no quadro ("NÃO LIGAR"). Trave, se der.</li>
+    <li class="key"><span class="tag">O passo que salva</span><b>Teste a ausência de tensão.</b> Comprove que está morto — não confie, verifique.</li>
+    <li><span class="tag">Sinalizar</span><b>Deixe o aviso</b> no quadro enquanto trabalha. Só religue com tudo fechado.</li>
+  </ol>
+
+  <div class="live">
+    <b>Teste o próprio teste — vivo → morto → vivo:</b> confirme o detector num ponto que você sabe estar ligado, teste o seu circuito, e reconfirme no ponto ligado. Pega detector com pilha fraca.
+    <div class="flow"><span class="v">vivo: apita ✔</span><span class="ar">→</span><span class="m">circuito: mudo</span><span class="ar">→</span><span class="v">vivo: apita ✔</span></div>
+  </div>
+
+  <h2>Com o que testar</h2>
+  <table class="tools">
+    <tr><th>Ferramenta</th><th>Veredito</th></tr>
+    <tr><td>Detector de tensão sem contato</td><td class="best">Recomendado</td></tr>
+    <tr><td>Multímetro (mede volts)</td><td class="best">Ótimo</td></tr>
+    <tr><td>Chave-teste neon (a que "acende")</td><td class="no">Evite — dá falso morto</td></tr>
+  </table>
+
+  <div class="flags">
+    <b>🛑 Pare e chame um profissional</b> se achar fios queimados/derretidos, vários cabos num terminal, ausência de terra sem saber o que fazer, ou se ficar inseguro em qualquer momento.
+  </div>
+
+  <p class="note">Regra de ouro: <b>nunca confie na cor do fio</b> (Lição 02) e <b>morto é o que se comprova</b>, não o que se supõe (Lição 03).</p>
+
+  <div class="foot">
+    <a href="../lessons/0003-desenergizar-com-seguranca.html">Lição 03 →</a> &nbsp;·&nbsp;
+    <a href="../lessons/0004-trocar-uma-tomada.html">Lição 04 →</a> &nbsp;·&nbsp;
+    <a href="../GLOSSARY.md">Glossário</a>
+  </div>
+</div>
+</body>
+</html>

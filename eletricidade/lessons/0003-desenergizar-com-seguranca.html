@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 03 — Desenergizar com segurança</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --warn:#92400e; --warnbg:#fef3c7;
+    --fase:#b91c1c; --neutro:#1d6fb8; --terra:#15803d; --ok:#15803d;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif; font-size:.72rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 .4rem}
+  h1{font-size:2rem; line-height:1.15; margin:0 0 .3rem; font-weight:700}
+  .sub{color:var(--soft); font-style:italic; margin:0 0 2rem}
+  h2{font-size:1.28rem; margin:2.6rem 0 .6rem; border-bottom:1px solid var(--rule); padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  .recall{border-left:3px solid var(--soft); background:#f3efe2; padding:.7rem 1.1rem; margin:1.3rem 0;
+    border-radius:0 6px 6px 0; font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .recall b{color:var(--ink)}
+  /* passos numerados */
+  .steps{margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif; counter-reset:step}
+  .step{display:grid; grid-template-columns:auto 1fr; gap:0 1rem; align-items:start;
+    border:1px solid var(--rule); border-radius:9px; padding:.9rem 1.1rem; margin:.7rem 0; background:#fff}
+  .step .n{width:2rem; height:2rem; border-radius:50%; background:var(--accent); color:#fff;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1rem; margin-top:.1rem}
+  .step h3{margin:0 0 .2rem; font-size:1.06rem}
+  .step p{margin:.15rem 0 0; font-size:.95rem; line-height:1.5}
+  .step .tag{font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; font-weight:700; color:var(--soft)}
+  .step.key{border-color:var(--ok); border-width:2px}
+  .step.key .n{background:var(--ok)}
+  .step.key .tag{color:var(--ok)}
+  /* ferramentas */
+  .tools{width:100%; border-collapse:collapse; margin:1.2rem 0; font-family:-apple-system,system-ui,sans-serif;
+    font-size:.9rem; border:1px solid var(--rule); border-radius:8px; overflow:hidden}
+  .tools th{background:#f3efe2; text-align:left; padding:.6rem .8rem; font-size:.7rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--soft); border-bottom:1px solid var(--rule)}
+  .tools td{padding:.6rem .8rem; border-bottom:1px solid var(--rule); vertical-align:top}
+  .tools tr:last-child td{border-bottom:none}
+  .tools .best{font-weight:700; color:var(--ok)}
+  .tools .risk{color:var(--fase); font-weight:700}
+  .safety{border-left:3px solid var(--warn); background:var(--warnbg); padding:.9rem 1.1rem;
+    margin:1.4rem 0; border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif; font-weight:700; color:var(--warn);
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem}
+  .golden{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .golden .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .golden p{margin:.45rem 0 0; font-size:1rem}
+  .liveflow{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin:.7rem 0 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; font-weight:700}
+  .liveflow span{padding:.3rem .7rem; border-radius:999px; border:1px solid rgba(0,0,0,.12)}
+  .liveflow .live{background:#fee2e2; color:#7f1d1d} .liveflow .dead{background:#dcfce7; color:#14532d}
+  .liveflow .ar{color:var(--soft)}
+  sup a{font-size:.7rem; text-decoration:none; color:var(--accent); font-weight:700}
+  /* quiz */
+  .quiz{font-family:-apple-system,system-ui,sans-serif; border:1px solid var(--rule);
+    border-radius:10px; padding:1.3rem 1.4rem; margin:1.6rem 0; background:#fff}
+  .quiz h3{margin:0 0 .2rem; font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600; margin:0 0 .55rem; font-family:inherit}
+  .opt{display:block; width:100%; text-align:left; border:1px solid var(--rule); background:#fafaf6;
+    padding:.6rem .85rem; margin:.4rem 0; border-radius:7px; cursor:pointer; font-size:.95rem;
+    font-family:inherit; transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7; border-color:#16a34a; color:#14532d; font-weight:600}
+  .opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+  .fb{font-size:.86rem; margin-top:.5rem; min-height:1.1rem; color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .footer-nav{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; color:var(--soft)}
+  .footer-nav a{display:inline-block; margin-right:1.2rem}
+  .ask{background:#1a1a17; color:#fdfcf8; border-radius:10px; padding:1.1rem 1.3rem; margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.95rem}
+  .ask b{color:#fbbf24}
+  .refs{font-family:-apple-system,system-ui,sans-serif; font-size:.82rem; color:var(--soft); margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  .primary{border:1px dashed var(--accent); border-radius:8px; padding:1rem 1.2rem; margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .primary .t{font-weight:700; color:var(--accent); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase}
+  @media (max-width:480px){ .tools{font-size:.82rem} .tools th,.tools td{padding:.5rem .5rem} }
+  @media print{ body{background:#fff} .quiz,.ask{break-inside:avoid} .opt{cursor:default} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Lição 03 · Segurança · Casa 220&nbsp;V</p>
+  <h1>Deixar o circuito morto — e ter certeza</h1>
+  <p class="sub">A habilidade que vem antes de qualquer reparo: desligar o disjuntor certo e <b>confirmar com teste</b> que não há tensão. Esta é a lição mais importante do curso.</p>
+
+  <div class="recall">
+    <b>Recuperando as lições anteriores:</b> na Lição 01 você viu que a <b>tensão</b> é a <i>pressão</i> que empurra a eletricidade (a corrente é a vazão). Na Lição 02, que a <b>fase</b> é o único fio que dá choque sozinho, e a regra de ouro: <b>nunca confie na cor</b>. Agora você aprende o outro lado dessa regra — <i>como testar</i>.
+  </div>
+
+  <p class="lead">Antes de encostar em qualquer fio, tomada ou interruptor, o circuito precisa estar <b>morto</b> — sem tensão. E "morto" não é o que você <i>acha</i>: é o que você <b>comprova</b>. Desligar o disjuntor é só o começo.</p>
+
+  <h2>Por que desligar o disjuntor não basta</h2>
+  <p>Desligar o disjuntor é o passo certo — mas sozinho ele deixa três brechas perigosas:</p>
+  <p>• Você pode ter desligado <b>o disjuntor errado</b> (quadros mal identificados são a regra, não a exceção).<br>
+     • Alguém pode <b>religar</b> sem saber que você está trabalhando.<br>
+     • Um disjuntor de um polo só corta a <b>fase</b>; dependendo da instalação, ainda pode haver tensão onde você não espera.</p>
+  <p>Por isso existe uma <b>sequência</b>. Ela é a versão doméstica e simplificada do que a norma <b>NR-10</b> exige de todo profissional.<sup><a href="#r1">1</a></sup></p>
+
+  <h2>A sequência, passo a passo</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <span class="tag">Seccionar</span>
+        <h3>Desligue o disjuntor do circuito</h3>
+        <p>Ache o disjuntor daquele cômodo/tomada e desligue. <b>Na dúvida de qual é, desligue o disjuntor geral</b> — o da entrada, que corta a casa inteira. Melhor a casa no escuro do que um choque.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <span class="tag">Impedir religamento</span>
+        <h3>Garanta que ninguém religue</h3>
+        <p>Avise todo mundo em casa. Cole um aviso no quadro ("NÃO LIGAR — manutenção") ou, se o disjuntor permitir, trave-o. Um religamento no momento errado é fatal.<sup><a href="#r1">1</a></sup></p>
+      </div>
+    </div>
+    <div class="step key">
+      <div class="n">3</div>
+      <div>
+        <span class="tag">O passo que salva — não pule</span>
+        <h3>Constate a ausência de tensão (TESTE)</h3>
+        <p>Com uma ferramenta de teste, <b>confirme</b> que o fio realmente está sem energia. Este é o passo que transforma "eu acho que desliguei o certo" em "eu <i>sei</i> que está morto".<sup><a href="#r2">2</a></sup></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <div>
+        <span class="tag">Sinalizar</span>
+        <h3>Mantenha a sinalização até terminar</h3>
+        <p>O aviso fica no quadro o tempo todo em que você estiver com a mão na obra. Só religa depois de tudo fechado e ninguém tocando nos fios.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Com o que testar</h2>
+  <p>O passo 3 depende de uma ferramenta. Para iniciante, a ordem de preferência é clara:</p>
+
+  <table class="tools">
+    <thead>
+      <tr><th>Ferramenta</th><th>O que faz</th><th>Para você</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Detector sem contato</b></td>
+        <td>Apita/acende perto de um fio com tensão. Barato, não precisa encostar no cobre.</td>
+        <td class="best">Recomendado</td>
+      </tr>
+      <tr>
+        <td><b>Multímetro</b></td>
+        <td>Mede a tensão real em volts. O mais confiável — mostra número, não só "tem/não tem".</td>
+        <td class="best">Ótimo</td>
+      </tr>
+      <tr>
+        <td><b>Chave-teste neon</b><br><span style="color:var(--soft);font-size:.82rem">(a "chave de fenda que acende")</span></td>
+        <td>Só acende na fase, depende do seu corpo como caminho e dá <b>falso "morto"</b> com facilidade.</td>
+        <td class="risk">Evite</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="golden">
+    <div class="t">🔑 A regra de ouro desta lição</div>
+    <p><b>Teste o próprio teste: vivo → morto → vivo.</b></p>
+    <p>Antes de confiar que o circuito está morto, confirme o detector num ponto que você <i>sabe</i> estar energizado (outra tomada ligada). Depois teste o seu circuito. Depois <b>reconfirme</b> o detector no ponto vivo. Um detector com pilha fraca fica mudo e "diz" que está tudo morto — o teste vivo→morto→vivo pega essa falha.<sup><a href="#r2">2</a></sup></p>
+    <div class="liveflow">
+      <span class="live">Ponto vivo: apita ✔</span><span class="ar">→</span>
+      <span class="dead">Seu circuito: mudo</span><span class="ar">→</span>
+      <span class="live">Ponto vivo: apita ✔</span>
+    </div>
+  </div>
+
+  <div class="safety">
+    <div class="t">⚠ Antes de começar</div>
+    Não trabalhe sozinho em casa sem avisar alguém. Tire anéis e relógio. Se o quadro tiver um <b>DR</b> (aquele botão de "Test"), melhor ainda — ele desarma na fuga de corrente. E se em <i>qualquer</i> momento você ficar em dúvida sobre o que está vendo, pare e pergunte. Segurança não tem pressa.
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="eletricidade" data-lesson="0003" data-title="Lição 03 — Desenergizar com segurança">
+    <h3>Pratique agora — sem espiar acima</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa. Clique na resposta.</p>
+
+    <div class="q" data-correct="0" data-note="Tensão é pressão; corrente é a vazão.">
+      <p>1. Na analogia da água, a tensão (volts) é o quê?</p>
+      <button class="opt">A pressão da água</button>
+      <button class="opt">A vazão da água</button>
+      <button class="opt">O calor da água</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Só o teste garante — cor e disjuntor não.">
+      <p>2. Qual é o único jeito de ter certeza de que o fio está sem energia?</p>
+      <button class="opt">Confiar na cor certa</button>
+      <button class="opt">Testar ausência de tensão</button>
+      <button class="opt">Desligar só o disjuntor</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Desligar não basta: confirme com teste.">
+      <p>3. Você desligou o disjuntor do circuito. Antes de encostar no fio, o que falta?</p>
+      <button class="opt">Trocar logo a tomada</button>
+      <button class="opt">Religar pra ter certeza</button>
+      <button class="opt">Testar se está morto</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Pilha fraca fica muda e “diz” que está morto.">
+      <p>4. Por que confirmar o detector num ponto vivo antes de usar?</p>
+      <button class="opt">Detector ruim falha calado</button>
+      <button class="opt">A norma sempre exige</button>
+      <button class="opt">Gasta menos a pilha</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://www.tagout.com.br/blog/saiba-como-fazer-uma-desenergizacao-de-acordo-com-a-nr-10" target="_blank">Tagout — “Desenergização conforme a NR-10”</a> uma vez: é a sequência oficial (seccionar → impedir religamento → <b>constatar ausência de tensão</b>) da qual esta lição é a versão caseira. Para ver o teste na prática, procure no <a href="https://www.youtube.com/@Sala_Da_Eletrica" target="_blank">Sala da Elétrica</a> por “como usar detector de tensão”.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Não sabe qual detector comprar, o que é o DR, ou como achar o disjuntor certo num quadro sem etiqueta? <b>Me pergunte no chat.</b> Não avance para a Lição 04 (trocar uma tomada de verdade) sem estar 100% seguro nesta sequência.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 04):</b> a primeira reforma de verdade — <b>trocar uma tomada</b> com segurança. Agora que você sabe deixar o circuito morto e comprovar, dá pra pôr a mão na obra.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0002-fase-neutro-terra.html">← Lição 02</a>
+    <a href="0004-trocar-uma-tomada.html">Lição 04 →</a>
+    <a href="../reference/desenergizar-checklist.html">🗂 Checklist</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+    <a href="../RESOURCES.md">🔗 Recursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://www.tagout.com.br/blog/saiba-como-fazer-uma-desenergizacao-de-acordo-com-a-nr-10" target="_blank">Tagout — Desenergização conforme a NR-10</a> (seccionar, impedir religamento, sinalizar).</li>
+      <li id="r2"><a href="https://adequada.eng.br/desenergizacao-nr10/" target="_blank">Engenharia Adequada — Desenergização NR-10</a> (constatação da ausência de tensão como passo obrigatório).</li>
+    </ol>
+  </div>
+
+</div>
+
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
