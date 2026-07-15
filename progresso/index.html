@@ -18,6 +18,10 @@
   h1{font-family:Georgia,serif;font-size:1.9rem;margin:.2rem 0 .3rem}
   .tag{color:var(--soft);font-size:.95rem;margin:0}
   .empty{background:#f3efe2;border-radius:12px;padding:1.4rem;text-align:center;color:var(--soft);margin-top:1.5rem}
+  .course{margin:0 0 2rem}
+  .ch{font-family:Georgia,serif;font-size:1.35rem;margin:1.6rem 0 .8rem;padding-bottom:.35rem;border-bottom:2px solid var(--rule)}
+  .cact{display:flex;gap:.5rem;margin-top:.2rem}
+  .cact button{margin:.2rem 0;width:auto;flex:1}
   .lesson{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:1.05rem 1.15rem;margin-bottom:.9rem}
   .lesson h2{font-family:Georgia,serif;font-size:1.12rem;margin:0 0 .5rem}
   .score{float:right;font-size:.8rem;font-weight:700;padding:.12rem .6rem;border-radius:999px}
@@ -51,10 +55,8 @@
 
   <div id="list"></div>
 
-  <div class="actions" id="actions" style="display:none">
-    <button class="primary" id="send">📨 Enviar pro professor</button>
-    <button class="secondary" id="copy">📋 Copiar resumo</button>
-    <p class="hint">“Enviar” abre uma <b>issue</b> já preenchida no GitHub (precisa estar logado). Se preferir, “Copiar” e cole no chat.</p>
+  <div class="foot" id="foot" style="display:none">
+    <p class="hint">“Enviar” abre uma <b>issue</b> já preenchida no GitHub, uma por curso (precisa estar logado). Se preferir, “Copiar” e cole no chat.</p>
     <button class="ghost" id="clear">Limpar progresso deste aparelho</button>
   </div>
 </div>
@@ -69,37 +71,73 @@
   function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"}); }catch(e){ return ""; } }
   function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},2200); }
 
+  var COURSE_NAMES = { eletricidade:"Eletricidade Doméstica", arquitetura:"Arquitetura de Software",
+    "claude-code":"Claude Code", cozinha:"Cozinha", ddd:"Domain-Driven Design" };
+  function courseName(slug){ return COURSE_NAMES[slug] || (slug.charAt(0).toUpperCase()+slug.slice(1)); }
+  function courseOf(d, id){ return (d.lessons[id] && d.lessons[id].course) || id.split("/")[0]; }
+
+  function groupByCourse(d){
+    var groups = {};
+    Object.keys(d.lessons||{}).sort().forEach(function(id){
+      var c = courseOf(d, id); (groups[c] = groups[c] || []).push(id);
+    });
+    return groups;
+  }
+
+  function lessonHtml(L, id){
+    var c = (L.last ? L.last.correct : 0), t = L.total || (L.questions||[]).length;
+    var cls = c===t ? "good" : (c >= Math.ceil(t/2) ? "mid" : "low");
+    var qs = (L.questions||[]).map(function(q){
+      if(!q) return "";
+      return '<div class="qline '+(q.lastCorrect?"ok":"no")+'"><span class="mk">'+(q.lastCorrect?"✓":"✗")+'</span><span>'+q.n+'. '+escapeHtml(q.label)+'</span></div>';
+    }).join("");
+    return '<div class="lesson"><span class="score '+cls+'">'+c+'/'+t+'</span>'+
+           '<h2>'+escapeHtml(L.title||id)+'</h2>'+qs+
+           '<div class="meta">Tentativas: '+(L.attempts||1)+' · melhor: '+((L.best&&L.best.correct)||c)+'/'+t+' · última: '+fmtDate(L.last&&L.last.at)+'</div></div>';
+  }
+
   function render(){
     var d = load();
-    var ids = Object.keys(d.lessons || {});
+    var groups = groupByCourse(d);
+    var courses = Object.keys(groups).sort();
     var list = document.getElementById("list");
-    if(!ids.length){
+    if(!courses.length){
       list.innerHTML = '<div class="empty">Você ainda não fez nenhum quiz.<br>Faça uma lição e volte aqui — seu desempenho aparece automaticamente.</div>';
       return;
     }
-    document.getElementById("actions").style.display = "block";
-    ids.sort();
-    list.innerHTML = ids.map(function(id){
-      var L = d.lessons[id];
-      var c = (L.last ? L.last.correct : 0), t = L.total || (L.questions||[]).length;
-      var cls = c===t ? "good" : (c >= Math.ceil(t/2) ? "mid" : "low");
-      var qs = (L.questions||[]).map(function(q){
-        if(!q) return "";
-        return '<div class="qline '+(q.lastCorrect?"ok":"no")+'"><span class="mk">'+(q.lastCorrect?"✓":"✗")+'</span><span>'+q.n+'. '+escapeHtml(q.label)+'</span></div>';
-      }).join("");
-      return '<div class="lesson"><span class="score '+cls+'">'+c+'/'+t+'</span>'+
-             '<h2>'+escapeHtml(L.title||id)+'</h2>'+qs+
-             '<div class="meta">Tentativas: '+(L.attempts||1)+' · melhor: '+((L.best&&L.best.correct)||c)+'/'+t+' · última: '+fmtDate(L.last&&L.last.at)+'</div></div>';
+    document.getElementById("foot").style.display = "block";
+    list.innerHTML = courses.map(function(course){
+      var name = courseName(course);
+      var lessons = groups[course].map(function(id){ return lessonHtml(d.lessons[id], id); }).join("");
+      return '<section class="course">'+
+        '<h2 class="ch">'+escapeHtml(name)+'</h2>'+ lessons +
+        '<div class="cact">'+
+          '<button class="primary send" data-course="'+escapeHtml(course)+'">📨 Enviar pro professor</button>'+
+          '<button class="secondary copy" data-course="'+escapeHtml(course)+'">📋 Copiar</button>'+
+        '</div>'+
+      '</section>';
     }).join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll(".send"), function(b){
+      b.onclick = function(){ sendCourse(b.dataset.course); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".copy"), function(b){
+      b.onclick = function(){ copyText(buildReport(b.dataset.course), function(){ toast("Resumo copiado — cole no chat 🙂"); }); };
+    });
   }
 
   function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
 
+  // IDs de lição de um único curso, em ordem.
+  function idsFor(d, course){
+    return Object.keys(d.lessons||{}).filter(function(id){ return courseOf(d, id)===course; }).sort();
+  }
+
   // Estado compacto pra máquina: sem indentação e sem repetir os enunciados
-  // (eles já vão no markdown acima). Mantém o corpo pequeno o bastante pra caber na URL do GitHub.
-  function compact(d){
-    var o = {v:1, lessons:{}};
-    Object.keys(d.lessons||{}).sort().forEach(function(id){
+  // (eles já vão no markdown acima). Mantém o corpo pequeno pra caber na URL do GitHub.
+  function compact(d, course){
+    var o = {v:1, course:course, lessons:{}};
+    idsFor(d, course).forEach(function(id){
       var L=d.lessons[id];
       o.lessons[id] = {
         t: L.total||(L.questions||[]).length,
@@ -112,10 +150,10 @@
     return o;
   }
 
-  function buildReport(){
+  function buildReport(course){
     var d = load();
-    var lines = ["# Progresso dos quizzes",""];
-    Object.keys(d.lessons).sort().forEach(function(id){
+    var lines = ["# Progresso — "+courseName(course), ""];
+    idsFor(d, course).forEach(function(id){
       var L=d.lessons[id], t=L.total||(L.questions||[]).length, c=L.last?L.last.correct:0;
       lines.push("## "+(L.title||id)+"  ("+c+"/"+t+")");
       (L.questions||[]).forEach(function(q){ if(q) lines.push((q.lastCorrect?"- [x] ":"- [ ] ")+"Q"+q.n+": "+q.label); });
@@ -123,14 +161,14 @@
       lines.push("");
     });
     var human = lines.join("\n");
-    var json = "```json\n"+JSON.stringify(compact(d))+"\n```";
+    var json = "```json\n"+JSON.stringify(compact(d, course))+"\n```";
     return human+"\n"+json;
   }
 
-  document.getElementById("send").onclick = function(){
+  function sendCourse(course){
     var when = new Date().toLocaleDateString("pt-BR");
-    var title = "[progresso] "+when;
-    var body = buildReport();
+    var title = "[progresso] "+courseName(course)+" · "+when;
+    var body = buildReport(course);
     var base = "https://github.com/"+REPO+"/issues/new?labels=progresso&title="+encodeURIComponent(title);
     var url = base+"&body="+encodeURIComponent(body);
     if(url.length > 6000){
@@ -142,16 +180,13 @@
       return;
     }
     window.open(url, "_blank");
-  };
+  }
 
   function copyText(txt, cb){
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(txt).then(function(){ cb&&cb(); }, function(){ fallbackCopy(txt); cb&&cb(); });
     } else { fallbackCopy(txt); cb&&cb(); }
   }
-  document.getElementById("copy").onclick = function(){
-    copyText(buildReport(), function(){ toast("Resumo copiado — cole no chat 🙂"); });
-  };
   function fallbackCopy(txt){
     var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
     try{ document.execCommand("copy"); toast("Resumo copiado 🙂"); }catch(e){ toast("Não consegui copiar — selecione manualmente."); }
@@ -160,7 +195,7 @@
 
   document.getElementById("clear").onclick = function(){
     if(confirm("Apagar o progresso salvo neste aparelho? (não afeta o que você já enviou)")){
-      localStorage.removeItem(KEY); render(); document.getElementById("actions").style.display="none"; toast("Progresso limpo.");
+      localStorage.removeItem(KEY); render(); document.getElementById("foot").style.display="none"; toast("Progresso limpo.");
     }
   };
 
