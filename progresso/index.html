@@ -95,6 +95,23 @@
 
   function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
 
+  // Estado compacto pra máquina: sem indentação e sem repetir os enunciados
+  // (eles já vão no markdown acima). Mantém o corpo pequeno o bastante pra caber na URL do GitHub.
+  function compact(d){
+    var o = {v:1, lessons:{}};
+    Object.keys(d.lessons||{}).sort().forEach(function(id){
+      var L=d.lessons[id];
+      o.lessons[id] = {
+        t: L.total||(L.questions||[]).length,
+        a: L.attempts||1,
+        last: L.last?{c:L.last.correct,at:L.last.at}:null,
+        best: L.best?{c:L.best.correct}:null,
+        q: (L.questions||[]).map(function(q){ return q?(q.lastCorrect?1:0):null; })
+      };
+    });
+    return o;
+  }
+
   function buildReport(){
     var d = load();
     var lines = ["# Progresso dos quizzes",""];
@@ -102,28 +119,38 @@
       var L=d.lessons[id], t=L.total||(L.questions||[]).length, c=L.last?L.last.correct:0;
       lines.push("## "+(L.title||id)+"  ("+c+"/"+t+")");
       (L.questions||[]).forEach(function(q){ if(q) lines.push((q.lastCorrect?"- [x] ":"- [ ] ")+"Q"+q.n+": "+q.label); });
+      lines.push("_tentativas: "+(L.attempts||1)+" · melhor: "+((L.best&&L.best.correct)||c)+"/"+t+"_");
       lines.push("");
     });
     var human = lines.join("\n");
-    var json = "```json\n"+JSON.stringify(d,null,2)+"\n```";
+    var json = "```json\n"+JSON.stringify(compact(d))+"\n```";
     return human+"\n"+json;
   }
 
   document.getElementById("send").onclick = function(){
-    var d = load();
     var when = new Date().toLocaleDateString("pt-BR");
     var title = "[progresso] "+when;
     var body = buildReport();
-    var url = "https://github.com/"+REPO+"/issues/new?labels=progresso&title="+encodeURIComponent(title)+"&body="+encodeURIComponent(body);
+    var base = "https://github.com/"+REPO+"/issues/new?labels=progresso&title="+encodeURIComponent(title);
+    var url = base+"&body="+encodeURIComponent(body);
+    if(url.length > 6000){
+      // Corpo grande demais pra URL: copia e abre uma issue em branco pra colar.
+      copyText(body, function(){
+        toast("Progresso copiado — é só colar na issue 📋");
+        setTimeout(function(){ window.open(base, "_blank"); }, 500);
+      });
+      return;
+    }
     window.open(url, "_blank");
   };
 
-  document.getElementById("copy").onclick = function(){
-    var txt = buildReport();
+  function copyText(txt, cb){
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){ toast("Resumo copiado — cole no chat 🙂"); },
-        function(){ fallbackCopy(txt); });
-    } else { fallbackCopy(txt); }
+      navigator.clipboard.writeText(txt).then(function(){ cb&&cb(); }, function(){ fallbackCopy(txt); cb&&cb(); });
+    } else { fallbackCopy(txt); cb&&cb(); }
+  }
+  document.getElementById("copy").onclick = function(){
+    copyText(buildReport(), function(){ toast("Resumo copiado — cole no chat 🙂"); });
   };
   function fallbackCopy(txt){
     var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
