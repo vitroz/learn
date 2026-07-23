@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 02 — Bounded Context</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#dcd9ce; --accent:#0f766e;
+    --soft:#6b6657; --code:#115e59; --warnbg:#f0fdfa; --warn:#115e59;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 2rem}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#e6f5f2;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  blockquote{border-left:3px solid var(--accent);margin:1.2rem 0;padding:.4rem 1.1rem;color:#334;
+    font-style:italic;background:#f0fdfa;border-radius:0 6px 6px 0}
+  .recall{border-left:3px solid var(--soft);background:#f3efe2;padding:.7rem 1.1rem;margin:1.3rem 0;
+    border-radius:0 6px 6px 0;font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .recall b{color:var(--ink)}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--rule);border-radius:8px;
+    overflow:hidden;margin:1.3rem 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
+  .compare>div{padding:.9rem 1rem}
+  .compare .h{background:#f3efe2;font-family:-apple-system,system-ui,sans-serif;font-size:.68rem;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--rule);font-weight:700}
+  .compare .l{border-right:1px solid var(--rule)}
+  .bad{color:#b91c1c} .good{color:#15803d}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#5eead4}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  @media (max-width:480px){ .compare{grid-template-columns:1fr} .compare .l{border-right:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Lição 02 · Estratégico</p>
+  <h1>Bounded Context</h1>
+  <p class="sub">A fronteira que decide onde uma palavra ainda quer dizer a mesma coisa — e onde vira outra.</p>
+
+  <p class="lead">Na Lição 01 você viu que o código deve falar a língua do negócio. Mas <i>qual</i> negócio? Numa base grande, "Cliente", "Produto" e "Conta" não têm um único dono — cada time fala uma variação sutil. O <b>Bounded Context</b> é o padrão que assume isso de frente: em vez de forçar um modelo gigante e unificado, você desenha fronteiras explícitas, e dentro de cada uma a linguagem volta a ser unívoca. É a peça estratégica que torna a Linguagem Ubíqua utilizável em escala.</p>
+
+  <div class="recall">
+    <b>Recuperando a Lição 01:</b> uma Linguagem Ubíqua é <i>uma</i> língua rigorosa, do modelo, falada por especialistas e devs e escrita no código. Guarde a última frase daquela lição: a língua só é unívoca <b>dentro de uma fronteira</b>. Essa fronteira tem nome — é o Bounded Context, e é o que você vai desenhar agora.
+  </div>
+
+  <h2>O que é</h2>
+  <blockquote>Um Bounded Context "delimita a aplicabilidade de um modelo específico. Delimitar contextos dá aos membros do time um entendimento claro e compartilhado do que precisa ser consistente e do que pode evoluir de forma independente".<sup><a href="#r1">1</a></sup></blockquote>
+  <p>É uma <b>fronteira explícita</b> — em geral um subsistema, um serviço ou o trabalho de um time — dentro da qual um único domain model vale e <b>uma única Linguagem Ubíqua</b> tem sentido preciso.<sup><a href="#r2">2</a></sup> Vernon é direto: todo termo dentro da fronteira tem um significado contextual específico; o mesmo termo <b>fora</b> dela pode — e provavelmente vai — significar outra coisa.<sup><a href="#r2">2</a></sup> A regra prática: <b>um Bounded Context, uma Linguagem Ubíqua.</b></p>
+
+  <h2>Por que a mesma palavra diverge</h2>
+  <p>Fowler dá o exemplo de uma concessionária em que "medidor" queria dizer três coisas diferentes em três departamentos — a conexão na rede, a relação com o cliente, o aparelho físico. Palavras assim (polissemias) funcionam na conversa, mas <b>quebram num sistema que precisa de precisão</b>.<sup><a href="#r3">3</a></sup> A saída do DDD não é decretar uma definição única: "a unificação total do modelo de um sistema grande não é viável nem custo-efetiva".<sup><a href="#r3">3</a></sup> Você aceita a divergência e desenha a fronteira em volta dela.</p>
+
+  <div class="compare">
+    <div class="h l">🅰 Contexto: Loyalty</div>
+    <div class="h">🅱 Contexto: Billing</div>
+    <div class="l">Cliente<br>&nbsp;&nbsp;= comprador que ganha pontos<br>&nbsp;&nbsp;saldo, tier, resgates</div>
+    <div>Cliente<br>&nbsp;&nbsp;= lojista que paga a fatura<br>&nbsp;&nbsp;plano, cobrança, uso</div>
+  </div>
+  <p>"Cliente" nos dois lados, dois modelos incompatíveis: no Loyalty é quem <i>ganha</i> pontos; no Billing é quem <i>paga</i> a conta. Tentar um único <code>Customer</code> que sirva aos dois gera um objeto inchado e ambíguo — exatamente o modelo gigante que a Lição 01 mandou evitar. <b>O ponto em que "Cliente" muda de sentido é a costura entre dois Bounded Contexts.</b></p>
+
+  <div class="safety">
+    <div class="t">⚠ O sinal que revela a fronteira</div>
+    Quando você ouvir "depende de qual time você pergunta" sobre o que uma palavra significa, não force um consenso — <b>desenhe a fronteira</b>. A divergência de linguagem é o sintoma que aponta onde começa um novo contexto.<sup><a href="#r3">3</a></sup> É diagnóstico, não defeito.
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="ddd" data-lesson="0002" data-title="Lição 02 — Bounded Context">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="1" data-note="É a fronteira que delimita onde um modelo e sua linguagem valem.">
+      <p>1. O que é um Bounded Context no DDD?</p>
+      <button class="opt">A tabela do banco onde o modelo é gravado</button>
+      <button class="opt">A fronteira onde um modelo e sua língua valem</button>
+      <button class="opt">A camada de services que orquestra o domínio</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Uma língua por contexto; fora dele o termo pode mudar de sentido.">
+      <p>2. Quantas Linguagens Ubíquas cabem num contexto?</p>
+      <button class="opt">Várias, uma para cada time do contexto</button>
+      <button class="opt">Nenhuma, a língua é global ao sistema</button>
+      <button class="opt">Uma só, unívoca dentro daquela fronteira</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="A divergência de sentido é o sinal, não um defeito a corrigir.">
+      <p>3. "Cliente" significa coisas diferentes em dois times. E daí?</p>
+      <button class="opt">É o sinal de uma fronteira entre dois contextos</button>
+      <button class="opt">É um bug de modelagem que precisa unificar já</button>
+      <button class="opt">É irrelevante, pois nomes não afetam o modelo</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://martinfowler.com/bliki/BoundedContext.html" target="_blank">Martin Fowler — “Bounded Context”</a> (~6 min): a formulação mais acessível, com o exemplo do "medidor" e o argumento de por que a unificação total não compensa. Depois, para a definição canônica de uma frase, veja o verbete <i>Bounded Context</i> no <a href="https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf" target="_blank">DDD Reference de Eric Evans (PDF grátis)</a>.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Pega um sistema que você conhece de verdade (smile-core, ou qualquer app seu) e vamos mapear: onde "Cliente", "Conta" ou "Produto" mudam de sentido entre times? <b>Me descreva no chat</b> e a gente desenha as fronteiras dos Bounded Contexts juntos.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 03):</b> Context Map — se cada contexto tem sua própria língua, como eles se relacionam e traduzem termos na fronteira sem virar bagunça.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0001-linguagem-ubiqua.html">← Lição 01</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://www.dddcommunity.org/book/evans_2003/" target="_blank">Eric Evans — Domain-Driven Design (blue book, 2003)</a>. Definição de Bounded Context (delimita a aplicabilidade de um modelo).</li>
+      <li id="r2"><a href="https://www.dddcommunity.org/book/implementing-domain-driven-design-by-vaughn-vernon/" target="_blank">Vaughn Vernon — Implementing DDD (red book)</a>. Uma Linguagem Ubíqua por Bounded Context; termos fora da fronteira mudam de sentido.</li>
+      <li id="r3"><a href="https://martinfowler.com/bliki/BoundedContext.html" target="_blank">Martin Fowler — Bounded Context</a>. Exemplo do "medidor"; unificação total não é viável nem custo-efetiva.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

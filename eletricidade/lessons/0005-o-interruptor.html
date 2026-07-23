@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 05 — O interruptor</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#d9d4c5; --accent:#9a3412;
+    --soft:#6b6657; --water:#1d6fb8; --warn:#92400e; --warnbg:#fef3c7;
+    --fase:#b91c1c; --neutro:#1d6fb8; --terra:#15803d; --ok:#15803d;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif; font-size:.72rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 .4rem}
+  h1{font-size:2rem; line-height:1.15; margin:0 0 .3rem; font-weight:700}
+  .sub{color:var(--soft); font-style:italic; margin:0 0 2rem}
+  h2{font-size:1.28rem; margin:2.6rem 0 .6rem; border-bottom:1px solid var(--rule); padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  .recall{border-left:3px solid var(--soft); background:#f3efe2; padding:.7rem 1.1rem; margin:1.3rem 0;
+    border-radius:0 6px 6px 0; font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .recall b{color:var(--ink)}
+  .gate{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .gate .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .gate p{margin:.45rem 0 0; font-size:1rem}
+  /* diagrama do circuito */
+  .circuit{display:flex; gap:1.4rem; align-items:center; flex-wrap:wrap; justify-content:center;
+    background:#fff; border:1px solid var(--rule); border-radius:12px; padding:1.4rem; margin:1.4rem 0}
+  .flow{font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; min-width:12rem}
+  .flow div{margin:.4rem 0; display:flex; align-items:center; gap:.5rem}
+  .chip{width:.9rem; height:.9rem; border-radius:3px; flex:0 0 auto; border:1px solid rgba(0,0,0,.15)}
+  .flow .arrow{color:var(--soft); font-size:1rem}
+  .box{font-family:-apple-system,system-ui,sans-serif; text-align:center; font-size:.82rem;
+    border:2px solid var(--rule); border-radius:9px; padding:.7rem .9rem; min-width:5.5rem; background:#f3efe2}
+  .box b{display:block; font-size:.95rem; margin-bottom:.15rem}
+  .diag{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; justify-content:center}
+  .diag .lbl{font-family:-apple-system,system-ui,sans-serif; font-size:.74rem; font-weight:700;
+    letter-spacing:.05em; text-transform:uppercase}
+  /* passos numerados */
+  .steps{margin:1.4rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .step{display:grid; grid-template-columns:auto 1fr; gap:0 1rem; align-items:start;
+    border:1px solid var(--rule); border-radius:9px; padding:.9rem 1.1rem; margin:.7rem 0; background:#fff}
+  .step .n{width:2rem; height:2rem; border-radius:50%; background:var(--accent); color:#fff;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1rem; margin-top:.1rem}
+  .step.zero .n{background:var(--warn)}
+  .step h3{margin:0 0 .2rem; font-size:1.06rem}
+  .step p{margin:.15rem 0 0; font-size:.95rem; line-height:1.5}
+  .safety{border-left:3px solid var(--warn); background:var(--warnbg); padding:.9rem 1.1rem;
+    margin:1.4rem 0; border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif; font-weight:700; color:var(--warn);
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.2rem}
+  .golden{border:2px solid var(--warn); background:var(--warnbg); border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .golden .t{font-weight:700; color:var(--warn); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .golden p{margin:.45rem 0 0; font-size:1rem}
+  .stop{border:2px solid var(--fase); background:#fee2e2; border-radius:10px; padding:1.1rem 1.3rem;
+    margin:1.6rem 0; font-family:-apple-system,system-ui,sans-serif}
+  .stop .t{font-weight:700; color:var(--fase); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+  .stop ul{margin:.5rem 0 0; padding-left:1.1rem} .stop li{margin:.25rem 0; font-size:.95rem}
+  sup a{font-size:.7rem; text-decoration:none; color:var(--accent); font-weight:700}
+  /* quiz */
+  .quiz{font-family:-apple-system,system-ui,sans-serif; border:1px solid var(--rule);
+    border-radius:10px; padding:1.3rem 1.4rem; margin:1.6rem 0; background:#fff}
+  .quiz h3{margin:0 0 .2rem; font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600; margin:0 0 .55rem; font-family:inherit}
+  .opt{display:block; width:100%; text-align:left; border:1px solid var(--rule); background:#fafaf6;
+    padding:.6rem .85rem; margin:.4rem 0; border-radius:7px; cursor:pointer; font-size:.95rem;
+    font-family:inherit; transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7; border-color:#16a34a; color:#14532d; font-weight:600}
+  .opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+  .fb{font-size:.86rem; margin-top:.5rem; min-height:1.1rem; color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .footer-nav{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif; font-size:.9rem; color:var(--soft)}
+  .footer-nav a{display:inline-block; margin-right:1.2rem}
+  .ask{background:#1a1a17; color:#fdfcf8; border-radius:10px; padding:1.1rem 1.3rem; margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.95rem}
+  .ask b{color:#fbbf24}
+  .refs{font-family:-apple-system,system-ui,sans-serif; font-size:.82rem; color:var(--soft); margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  .primary{border:1px dashed var(--accent); border-radius:8px; padding:1rem 1.2rem; margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif; font-size:.92rem}
+  .primary .t{font-weight:700; color:var(--accent); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase}
+  @media print{ body{background:#fff} .quiz,.ask{break-inside:avoid} .opt{cursor:default} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Lição 05 · Prática · Casa 220&nbsp;V</p>
+  <h1>O interruptor: corta só a fase</h1>
+  <p class="sub">Por que uma chave de luz mexe em um fio só — e por que é sempre a fase. Trocar um interruptor simples com segurança, e uma espiada no paralelo (two-way).</p>
+
+  <div class="gate">
+    <div class="t">🔒 Pré-requisito obrigatório</div>
+    <p>Como toda lição de contato físico, esta só é segura depois da <a href="0003-desenergizar-com-seguranca.html">Lição 03</a>. O <b>passo zero</b> continua o mesmo: desligar o disjuntor e <b>comprovar que está morto</b> (vivo → morto → vivo). Um detalhe traiçoeiro do interruptor: se você desligar só a <i>chave de luz</i>, a fase ainda chega até ali. Só o disjuntor mata o ponto.</p>
+  </div>
+
+  <div class="recall">
+    <b>Antes de começar, um lembrete da Lição 01:</b> tensão é a <b>pressão</b> que empurra a eletricidade — como a pressão da água num cano fechado. A tomada tem 220&nbsp;V de pressão mesmo sem nada ligado; a <b>corrente</b> (o quanto flui) só aparece quando você fecha o circuito. Guarde isso: o interruptor não muda a pressão, ele só <b>abre e fecha o caminho</b> pra corrente passar.
+  </div>
+
+  <h2>O que um interruptor realmente faz</h2>
+  <p>Um interruptor é só uma <b>ponte que você abre e fecha</b>. Ligado, ele conecta os dois fios e a corrente flui até a lâmpada. Desligado, ele abre um vão e a corrente para. Simples assim — mas <i>onde</i> você coloca essa ponte importa muito.</p>
+  <p>A regra da NBR 5410 é clara: o interruptor tem que ser instalado no fio <b>fase</b>, nunca no neutro.<sup><a href="#r1">1</a></sup> O neutro vai <b>direto</b> pra lâmpada, sem passar pela chave.</p>
+
+  <div class="circuit">
+    <div class="diag">
+      <div class="box"><b>Disjuntor</b>fase sai daqui</div>
+      <span class="flow arrow">→</span>
+      <div class="box" style="border-color:var(--fase)"><b style="color:var(--fase)">Interruptor</b>corta a fase</div>
+      <span class="flow arrow">→</span>
+      <div class="box"><b>Lâmpada</b>acende</div>
+    </div>
+    <div class="flow">
+      <div><span class="chip" style="background:#b91c1c"></span> <b>Fase</b> → entra no interruptor</div>
+      <div><span class="chip" style="background:#facc15"></span> <b>Retorno</b> → sai da chave pra lâmpada</div>
+      <div><span class="chip" style="background:#1d6fb8"></span> <b>Neutro</b> → vai direto pra lâmpada</div>
+    </div>
+  </div>
+
+  <p>Aquele fio que sai do interruptor e sobe até a lâmpada tem nome: <b>retorno</b>. É a fase depois de passar pela chave — por isso muita gente pinta o retorno de uma cor diferente da fase, pra não confundir.<sup><a href="#r2">2</a></sup></p>
+
+  <h2>Por que a fase, e não o neutro?</h2>
+  <p>Imagine que o interruptor cortasse o <b>neutro</b>. Com a chave desligada, a lâmpada apaga do mesmo jeito — parece funcionar. Mas a <b>fase continua chegando</b> ao bocal, energizado e esperando. Quando você fosse trocar a lâmpada queimada, tocaria num soquete <b>vivo</b> achando que estava desligado.<sup><a href="#r1">1</a></sup></p>
+  <p>Cortando a fase, ao desligar a chave você <b>tira a pressão</b> do bocal: ele fica sem tensão, seguro para trocar a lâmpada. É por isso que a norma manda a fase pelo interruptor — é uma regra de <b>segurança</b>, não de funcionamento.</p>
+
+  <div class="golden">
+    <div class="t">🔑 A regra de ouro desta lição</div>
+    <p><b>O interruptor corta a fase. Sempre a fase.</b></p>
+    <p>Se a chave estiver no neutro, o bocal fica energizado mesmo "desligado" — e alguém leva choque trocando a lâmpada. Ao abrir uma caixa de interruptor, o fio que entra deve ser fase; o que sai é o retorno. Neutro não aparece ali (vai direto pra lâmpada).</p>
+  </div>
+
+  <h2>Trocar um interruptor simples — passo a passo</h2>
+  <div class="steps">
+    <div class="step zero">
+      <div class="n">0</div>
+      <div>
+        <h3>Desenergize e prove que está morto</h3>
+        <p>Disjuntor desligado, aviso no quadro, teste vivo → morto → vivo (Lição 03). Lembre: desligar a chave de luz <b>não</b> desenergiza — a fase ainda chega. Só o disjuntor mata.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <h3>Fotografe antes de soltar</h3>
+        <p>Registre como os dois fios estão ligados nos bornes. É a sua rede de segurança pra remontar igual, mesmo que se confunda depois.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <h3>Solte os fios e identifique</h3>
+        <p>Um interruptor simples tem dois fios: a <b>fase</b> que chega e o <b>retorno</b> que sobe pra lâmpada. Não há neutro nem terra na chave comum. Afrouxe os bornes e retire a peça velha.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div>
+        <h3>Ligue nos dois bornes</h3>
+        <p>Num interruptor simples os dois fios são intercambiáveis: fase num borne, retorno no outro — funciona nos dois sentidos. Enfie o cobre todo dentro do borne, sem fio aparecendo.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <div>
+        <h3>Aperte firme</h3>
+        <p>Aperte bem cada parafuso e dê um puxão leve: o fio não pode sair nem folgar. Assim como na tomada, aperto frouxo aqui é a causa nº&nbsp;1 de chave queimada.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <div>
+        <h3>Remonte, religue e teste</h3>
+        <p>Parafuse a chave na caixa, ponha o espelho, tire o aviso e religue o disjuntor. Acenda e apague a luz. Se tiver detector, confirme que o espelho não acusa tensão.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>E o paralelo (two-way)?</h2>
+  <p>Você já viu: no corredor ou na escada, dois interruptores controlam a <b>mesma</b> lâmpada — acende embaixo, apaga em cima. Isso é o <b>interruptor paralelo</b> (também chamado de <i>three-way</i>).<sup><a href="#r3">3</a></sup></p>
+  <p>A ideia: entre os dois interruptores correm <b>dois fios</b> (os "viajantes"). Cada chave escolhe por qual dos dois a fase vai seguir. Quando os dois apontam pro mesmo fio, o circuito fecha e a luz acende; qualquer chave que você mexa inverte o estado. Não precisa decorar a fiação agora — só reconhecer que <b>ainda é a fase sendo desviada</b>, só que por dois caminhos possíveis. A instalação do paralelo é um degrau acima; quando quiser fazer, me chame que a gente monta o diagrama junto.</p>
+
+  <div class="stop">
+    <div class="t">🛑 Pare e chame um profissional se…</div>
+    <ul>
+      <li>Achar <b>três ou mais fios</b> numa caixa que você esperava simples — pode ser paralelo ou circuito compartilhado.</li>
+      <li>O interruptor tiver <b>tomada junto</b> ou vários módulos e você não souber o que é o quê.</li>
+      <li>Depois de religar, a luz <b>não apagar</b> pela chave ou o bocal continuar vivo — sinal de fase no lugar errado.</li>
+      <li>Em <i>qualquer</i> momento você ficar inseguro. Parar no meio é decisão de quem sabe.</li>
+    </ul>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="eletricidade" data-lesson="0005" data-title="Lição 05 — O interruptor">
+    <h3>Pratique agora — sem espiar acima</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Recuperar de memória é o que fixa. Clique na resposta.</p>
+
+    <div class="q" data-correct="1" data-note="A chave sempre vai no fio fase, nunca no neutro.">
+      <p>1. Um interruptor deve cortar qual fio?</p>
+      <button class="opt">Sempre o fio neutro</button>
+      <button class="opt">Sempre o fio fase</button>
+      <button class="opt">Sempre o fio terra</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="No neutro o bocal fica vivo; choque ao trocar a lâmpada.">
+      <p>2. Se a chave cortasse o neutro, o que acontece?</p>
+      <button class="opt">A lâmpada nunca mais acende</button>
+      <button class="opt">O disjuntor desarma na hora</button>
+      <button class="opt">O bocal continua energizado</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Retorno = a fase depois de passar pela chave, indo à lâmpada.">
+      <p>3. O fio que sai da chave pra lâmpada se chama?</p>
+      <button class="opt">Retorno</button>
+      <button class="opt">Neutro</button>
+      <button class="opt">Terra</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Desligar a chave não mata a fase; só o disjuntor e o teste.">
+      <p>4. Antes de tocar nos fios do interruptor, você deve?</p>
+      <button class="opt">Só desligar a chave de luz</button>
+      <button class="opt">Confiar na cor dos fios</button>
+      <button class="opt">Desligar o disjuntor e testar</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Veja o vídeo <a href="https://www.mundodaeletrica.com.br/como-instalar-uma-lampada/" target="_blank">“Como instalar uma lâmpada / interruptor simples”</a> do <b>Mundo da Elétrica</b> — mostra a fase entrando na chave, o retorno subindo pra lâmpada e o neutro indo direto ao bocal, exatamente como no diagrama acima. Ver as mãos fazendo fixa a lógica.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Abriu a caixa e achou três fios, ou uma tomada junto, ou não sabe qual é a fase e qual é o retorno? <b>Me mande uma foto e me pergunte no chat</b> antes de religar. Melhor parar no meio do que deixar um bocal vivo.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 06):</b> o <b>quadro de disjuntores</b> — ler o que cada disjuntor protege, por que ele desarma, e o que faz o <b>DR</b> (aquele botão “Test”) que salva vidas.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0004-trocar-uma-tomada.html">← Lição 04</a>
+    <a href="../reference/desenergizar-checklist.html">🗂 Checklist</a>
+    <a href="../reference/fios-cores-funcao.html">🔌 Fios: cor e função</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://elevaracademycursos.com.br/instalacao-detalhada-de-interruptor-simples-conforme-a-nbr-5410/" target="_blank">Elevar Academy — Instalação de interruptor simples conforme a NBR 5410</a> (a chave corta a fase; o neutro vai direto à lâmpada — segurança contra bocal energizado).</li>
+      <li id="r2"><a href="https://www.mundodaeletrica.com.br/como-instalar-uma-lampada/" target="_blank">Mundo da Elétrica — Como instalar uma lâmpada</a> (fase no borne do interruptor, retorno ao contato central do receptáculo, neutro ao borne lateral).</li>
+      <li id="r3"><a href="https://www.mundodaeletrica.com.br/como-ligar-interruptor-paralelo-three-way/" target="_blank">Mundo da Elétrica — Como ligar interruptor paralelo (three-way)</a> (controle da mesma lâmpada de dois pontos, com os dois fios viajantes).</li>
+    </ol>
+  </div>
+
+</div>
+
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

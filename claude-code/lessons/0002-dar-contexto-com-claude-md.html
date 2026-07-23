@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 02 — Dar contexto ao Claude: CLAUDE.md</title>
+<style>
+  :root{
+    --ink:#1a1a17; --paper:#fdfcf8; --rule:#dcd9ce; --accent:#6d28d9;
+    --soft:#6b6657; --code:#4c1d95; --warnbg:#f5f3ff; --warn:#5b21b6;
+  }
+  *{box-sizing:border-box}
+  html{font-size:18px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",Palatino,serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3.2rem 1.4rem 5rem}
+  .kicker{font-family:-apple-system,system-ui,sans-serif;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 .4rem}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 .3rem}
+  .sub{color:var(--soft);font-style:italic;margin:0 0 2rem}
+  h2{font-size:1.28rem;margin:2.6rem 0 .6rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  p{margin:.7rem 0}
+  a{color:var(--accent)}
+  .lead{font-size:1.08rem}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#f0ecfa;
+    color:var(--code);padding:.1rem .35rem;border-radius:4px}
+  .recall{border-left:3px solid var(--soft);background:#f3efe2;padding:.7rem 1.1rem;margin:1.3rem 0;
+    border-radius:0 6px 6px 0;font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .recall b{color:var(--ink)}
+  .cycle{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1.4rem 0;
+    font-family:-apple-system,system-ui,sans-serif}
+  .cycle .step{background:#f0ecfa;border-radius:10px;padding:.8rem .6rem;text-align:center}
+  .cycle .n{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .cycle .t{font-weight:700;font-size:.95rem;margin:.2rem 0}
+  .cycle .d{font-size:.72rem;color:var(--soft);line-height:1.3}
+  .practice{border-left:3px solid var(--accent);background:#faf8ff;padding:.7rem 1.1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .practice b{color:var(--accent)}
+  .sample{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem;line-height:1.5;
+    background:#fff;border:1px solid var(--rule);border-radius:9px;padding:1rem 1.2rem;margin:1.2rem 0;
+    color:var(--ink);white-space:pre-wrap;overflow-x:auto}
+  .sample .h{color:var(--accent);font-weight:700}
+  .sample .c{color:var(--soft)}
+  .safety{border-left:3px solid var(--warn);background:var(--warnbg);padding:.9rem 1.1rem;margin:1.4rem 0;border-radius:0 6px 6px 0}
+  .safety .t{font-family:-apple-system,system-ui,sans-serif;font-weight:700;color:var(--warn);font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+  sup a{font-size:.7rem;text-decoration:none;color:var(--accent);font-weight:700}
+  .quiz{font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--rule);border-radius:10px;
+    padding:1.3rem 1.4rem;margin:1.6rem 0;background:#fff}
+  .quiz h3{margin:0 0 .2rem;font-size:1.05rem}
+  .q{margin:1.3rem 0 0}
+  .q p{font-weight:600;margin:0 0 .55rem;font-family:inherit}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:#fafaf6;
+    padding:.6rem .85rem;margin:.4rem 0;border-radius:7px;cursor:pointer;font-size:.95rem;font-family:inherit;transition:.12s}
+  .opt:hover{border-color:var(--soft)}
+  .opt.right{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:600}
+  .opt.wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .fb{font-size:.86rem;margin-top:.5rem;min-height:1.1rem;color:var(--soft)}
+  .fb.ok{color:#15803d} .fb.no{color:#b91c1c}
+  .primary{border:1px dashed var(--accent);border-radius:8px;padding:1rem 1.2rem;margin:1.6rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.92rem}
+  .primary .t{font-weight:700;color:var(--accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+  .ask{background:#1a1a17;color:#fdfcf8;border-radius:10px;padding:1.1rem 1.3rem;margin:2rem 0;
+    font-family:-apple-system,system-ui,sans-serif;font-size:.95rem}
+  .ask b{color:#c4b5fd}
+  .footer-nav{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+    font-family:-apple-system,system-ui,sans-serif;font-size:.9rem;color:var(--soft)}
+  .footer-nav a{display:inline-block;margin-right:1.2rem}
+  .refs{font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;color:var(--soft);margin-top:2.5rem}
+  .refs ol{padding-left:1.2rem} .refs li{margin:.3rem 0}
+  @media (max-width:560px){ .cycle{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Claude Code · Lição 02 · Práticas</p>
+  <h1>Dar contexto ao Claude: o <code>CLAUDE.md</code></h1>
+  <p class="sub">Contexto curado vence contexto despejado. Ensine o repositório uma vez, colha em toda sessão.</p>
+
+  <p class="lead">Na Lição 01 você aprendeu a dirigir o loop com contexto explícito — mas dado <i>prompt a prompt</i>. Há um contexto que se repete toda sessão: como rodar os testes, o estilo de código, a estrutura do repo. Repetir isso é desperdício. O <code>CLAUDE.md</code> é a memória do projeto: um arquivo que o Claude Code carrega automaticamente no início de cada sessão.<sup><a href="#r1">1</a></sup> Esta lição te ensina o que colocar nele — e, mais importante, o que <b>não</b> colocar.</p>
+
+  <div class="recall">
+    <b>Recuperando a Lição 01:</b> o ciclo <b>Explorar → Planejar → Codar → Verificar</b>. O <code>CLAUDE.md</code> alimenta as duas pontas: dá ao Claude o mapa para <i>explorar</i> mais rápido e o comando de teste para <i>verificar</i> sozinho — sem você reexplicar em cada prompt.
+  </div>
+
+  <h2>O que é, e como carrega</h2>
+  <p>O Claude Code procura arquivos <code>CLAUDE.md</code> subindo pela árvore de diretórios e os carrega <b>por inteiro no início da sessão</b>.<sup><a href="#r1">1</a></sup> A hierarquia se soma (não sobrescreve), do mais amplo ao mais específico:</p>
+  <div class="cycle">
+    <div class="step"><div class="n">Organização</div><div class="t">Policy</div><div class="d">Regra gerenciada da empresa, aplicada a todos.</div></div>
+    <div class="step"><div class="n">Usuário</div><div class="t">~/.claude</div><div class="d">Suas preferências pessoais, valem em todo projeto.</div></div>
+    <div class="step"><div class="n">Projeto</div><div class="t">./CLAUDE.md</div><div class="d">Versionado no repo, compartilhado com o time.</div></div>
+    <div class="step"><div class="n">Local</div><div class="t">.local.md</div><div class="d">Só seu, no repo. Vai no <code>.gitignore</code>.</div></div>
+  </div>
+  <p>Um <code>CLAUDE.md</code> numa subpasta não pesa desde o início: ele entra <b>sob demanda</b>, só quando o Claude lê arquivos daquele diretório.<sup><a href="#r1">1</a></sup> Comece um projeto com <code>/init</code> — ele analisa a base e gera um <code>CLAUDE.md</code> inicial com comandos de build, teste e convenções.<sup><a href="#r2">2</a></sup> Para editar depois, use <code>/memory</code>.<sup><a href="#r2">2</a></sup></p>
+
+  <h2>O que colocar (e o que não)</h2>
+  <div class="practice">
+    <p><b>Coloque o que se repete e é verificável.</b> Comandos de build e teste, estilo de código, convenções de nomes, o layout do repo, o checklist de review.<sup><a href="#r1">1</a></sup> São instruções concretas que o Claude confere no próprio contexto.</p>
+  </div>
+  <div class="practice">
+    <p><b>Não despeje tudo.</b> Procedimento de vários passos vira <b>skill</b>; instrução de uma pasta só vira <b>rule</b> por caminho (<code>.claude/rules/</code>). O <code>CLAUDE.md</code> é entregue no startup — não é config imposta.<sup><a href="#r1">1</a></sup></p>
+  </div>
+  <div class="sample"><span class="c"># smile-core</span>
+<span class="h">## Comandos</span>
+- Testes: `smile-cli run-specs <arquivo>`
+- Lint: `smile-cli standardrb`
+
+<span class="h">## Estilo Ruby</span>
+- Sem `.freeze`; prefira `pluck` a `map`
+- Constantes fora de blocos
+
+<span class="h">## Etiqueta</span>
+- PRs sempre em draft; título `[COR-XXX]`</div>
+
+  <div class="safety">
+    <div class="t">⚡ Por que curar (a janela de contexto)</div>
+    O <code>CLAUDE.md</code> custa tokens em <b>toda</b> sessão. Quanto maior, menos o Claude adere a ele — a regra importante se afoga no ruído. A orientação oficial é manter cada arquivo <b>abaixo de ~200 linhas</b>, específico e conciso.<sup><a href="#r1">1</a></sup> Precisa reaproveitar um arquivo maior? Importe-o com <code>@caminho/arquivo</code> (até 4 níveis de importação).<sup><a href="#r1">1</a></sup>
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="claude-code" data-lesson="0002" data-title="Lição 02 — Dar contexto ao Claude: CLAUDE.md">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="2" data-note="Ele carrega por inteiro no início da sessão, subindo pela árvore de diretórios.">
+      <p>1. Quando o Claude Code carrega o <code>CLAUDE.md</code> do projeto?</p>
+      <button class="opt">Só quando você pede a leitura dele</button>
+      <button class="opt">Uma vez por dia, ao abrir o repo</button>
+      <button class="opt">No início de cada sessão, sozinho</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Ele custa tokens toda sessão; inchado, a regra importante se dilui e a adesão cai.">
+      <p>2. Por que curar o <code>CLAUDE.md</code> em vez de despejar tudo?</p>
+      <button class="opt">Custa contexto e dilui o que importa</button>
+      <button class="opt">O arquivo trava acima de duzentas linhas</button>
+      <button class="opt">O Claude ignora arquivos muito curtos</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Bom conteúdo é o que repete e é verificável: comandos, estilo, convenções.">
+      <p>3. Qual destes é o melhor conteúdo para o <code>CLAUDE.md</code>?</p>
+      <button class="opt">O passo a passo longo de um deploy raro</button>
+      <button class="opt">Os comandos de teste e o estilo do repo</button>
+      <button class="opt">O log inteiro da última sessão de debug</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://code.claude.com/docs/en/memory.md" target="_blank">Memory / CLAUDE.md (Anthropic)</a> — hierarquia dos arquivos, comportamento de carga, boas práticas, imports com <code>@</code> e as rules por caminho. ~6 min.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Quer montar um <code>CLAUDE.md</code> enxuto para o smile-core comigo — decidir o que vira memória, o que vira skill e o que vira rule por caminho? Abra o repo, rode <code>/init</code> e <b>me chame no chat</b> pra revisarmos juntos.
+  </div>
+
+  <p style="font-family:-apple-system,system-ui,sans-serif; font-size:.92rem; color:var(--soft)">
+    <b>A seguir (Lição 03):</b> <b>plan mode</b> na prática — usar o modo de planejamento de propósito em mudanças multi-arquivo, e revisar o plano antes de deixar o Claude tocar em código.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0001-explorar-planejar-codar-verificar.html">← Lição 01</a>
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../GLOSSARY.md">📖 Glossário</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://code.claude.com/docs/en/memory.md" target="_blank">Anthropic — Memory (CLAUDE.md)</a> (hierarquia, carga, boas práticas, imports).</li>
+      <li id="r2"><a href="https://code.claude.com/docs/en/commands.md" target="_blank">Anthropic — Slash commands</a> (<code>/init</code> e <code>/memory</code>).</li>
+      <li id="r3"><a href="https://code.claude.com/docs/en/how-claude-code-works.md" target="_blank">Anthropic — How Claude Code works</a> (por que o CLAUDE.md é contexto, não config).</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
