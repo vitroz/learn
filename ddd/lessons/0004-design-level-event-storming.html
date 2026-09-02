@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 04 — Design-level Event Storming</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<link rel="stylesheet" href="../../assets/stickies.css">
+<link rel="stylesheet" href="../../assets/timebox.css">
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Lição 04 · Do estratégico ao tático</p>
+  <h1>Design-level Event Storming</h1>
+  <p class="sub">Da faixa "Store Credit" pros aggregates, comandos e policies — e daí pro primeiro esqueleto de <code>app/components/</code>.</p>
+
+  <p class="lead">O Big Picture da Lição 03 te deixou com faixas e hotspots. Agora você escolhe <b>uma</b> faixa e dá zoom: o <b>Software Design Event Storming</b> pergunta, pra cada evento laranja, <i>o que causou isso</i> (um comando) e <i>quem decidiu executar</i> (um aggregate). O resultado não é um diagrama pra guardar — é literalmente a lista de arquivos do primeiro componente. E a regra que decide o tamanho de cada aggregate vem de uma frase de Vernon que você vai carregar pro resto da carreira: <b>uma instância de aggregate por transação</b>.</p>
+
+  <div class="recall">
+    <b>Recuperando a Lição 03:</b> laranja é evento (passado), azul é comando, lilás é policy ("sempre que X, então Y"), rosa-largo é sistema externo, rosa-neon é hotspot. Amarelo-pálido grande — o <b>aggregate</b> — ficou reservado pra esta lição. Brandolini o define como "a porção do sistema que recebe comandos e decide se os executa".<sup><a href="#r3">3</a></sup>
+  </div>
+
+  <h2>A sequência: do evento pro aggregate</h2>
+  <p>Khononov organiza o zoom em passos, e a ordem importa porque cada cor puxa a próxima:<sup><a href="#r1">1</a></sup></p>
+  <ol class="steps">
+    <li><b>Comandos.</b> Pra cada evento, o que o causou? Cole o azul <i>antes</i> do laranja: "Emitir crédito" → "Crédito emitido". Anote quem dá o comando (ator amarelo) ou se é o sistema.</li>
+    <li><b>Policies.</b> Onde um evento causa um comando sem humano no meio, cole o lilás entre os dois: "Sempre que promoção aplicada ao pedido, então emitir crédito". Isso é o que vai ligar dois aggregates diferentes.</li>
+    <li><b>Read models.</b> O que o ator precisa <i>ver</i> pra decidir dar o comando? "Saldo disponível" antes de "Resgatar crédito". Verde.</li>
+    <li><b>Sistemas externos.</b> Quem de fora recebe ou origina eventos, e o que ele garante ou não garante.</li>
+    <li><b>Aggregates.</b> Agrupe cada comando com os eventos que ele produz e dê um <b>nome do glossário</b>. "Comece a adicionar aggregates como donos do comportamento de negócio."<sup><a href="#r2">2</a></sup></li>
+  </ol>
+
+  <h2>A regra que decide o tamanho</h2>
+  <blockquote>"Um bounded context bem projetado modifica <b>só uma instância de aggregate por transação</b>, em todos os casos. […] Aggregate é sinônimo de fronteira de consistência transacional."<sup><a href="#r4">4</a></sup></blockquote>
+  <p>Vernon conta o caso de um <code>Product</code> que segurava backlog items, releases e sprints porque "produtos <i>têm</i> essas coisas" — e falhava em produção toda vez que dois usuários mexiam em partes diferentes ao mesmo tempo. O erro: <b>invariantes falsos</b>, nascidos de conveniência de composição, não de regra de negócio.<sup><a href="#r4">4</a></sup> A pergunta certa pra cada fronteira é: <i>o que precisa ser verdade no fim desta transação?</i></p>
+  <p>E quando não estiver claro, o desempate que Evans deu a Vernon: <b>"pergunte se é trabalho do usuário que está executando o caso de uso deixar os dados consistentes. Se for, transacional. Se for trabalho de outro usuário, ou do sistema, eventual."</b><sup><a href="#r5">5</a></sup> Aplique na sua faixa:</p>
+
+  <table class="ref">
+    <tr><th>Regra do mural</th><th>De quem é o trabalho?</th><th>Veredito</th></tr>
+    <tr><td>"Resgate não pode exceder o saldo"</td><td>Do shopper que está resgatando — ele precisa ver o resultado agora</td><td><b>Transacional.</b> Saldo e resgate no <i>mesmo</i> aggregate: <b>Conta de crédito</b>.</td></tr>
+    <tr><td>"Promoção aplicada ao pedido gera crédito"</td><td>Do sistema — o shopper só fez um pedido</td><td><b>Eventual.</b> Dois aggregates (Promoção, Conta de crédito) ligados por uma <b>policy</b>.</td></tr>
+    <tr><td>"Crédito emitido aparece na Shopify"</td><td>Do sistema, e depende de terceiro</td><td><b>Eventual.</b> Sistema externo; o espelhamento é um evento próprio ("Crédito espelhado").</td></tr>
+  </table>
+
+  <h2>Exemplo: a faixa Store Credit com zoom</h2>
+  <div class="legend">
+    <span><i class="sw" style="background:#7fb3e6"></i>Command</span>
+    <span><i class="sw" style="background:#fdf1b7;border:1px dashed #b8a24a"></i>Aggregate</span>
+    <span><i class="sw" style="background:#fbb040"></i>Event</span>
+    <span><i class="sw" style="background:#c9a7e8"></i>Policy</span>
+    <span><i class="sw" style="background:#a8e6a3"></i>Read model</span>
+    <span><i class="sw" style="background:#f8b4c8"></i>External</span>
+  </div>
+
+  <div class="board lane">
+    <span class="lane-t">Fluxo 1 — emissão (disparado por outro contexto)</span>
+    <span class="sticky ev" style="opacity:.7">Promoção aplicada ao pedido</span>
+    <span class="arrow">→</span>
+    <span class="sticky policy">Sempre que promoção aplicada, então emitir crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky cmd">Emitir crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky agg">Conta de crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky ev">Crédito emitido</span>
+    <span class="arrow">→</span>
+    <span class="sticky policy">Sempre que crédito emitido, então espelhar</span>
+    <span class="arrow">→</span>
+    <span class="sticky ext">Shopify StoreCreditAccount</span>
+    <span class="arrow">→</span>
+    <span class="sticky ev">Crédito espelhado</span>
+  </div>
+
+  <div class="board lane">
+    <span class="lane-t">Fluxo 2 — resgate (disparado pelo shopper)</span>
+    <span class="sticky actor">Shopper</span>
+    <span class="sticky read">Saldo disponível</span>
+    <span class="arrow">→</span>
+    <span class="sticky cmd">Resgatar crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky agg">Conta de crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky ev">Crédito resgatado</span>
+    <span class="sticky hot">Resgate acontece na Smile ou só na Shopify?</span>
+  </div>
+
+  <div class="board lane">
+    <span class="lane-t">Fluxo 3 — expiração (disparado pelo tempo)</span>
+    <span class="sticky policy">Sempre que passa a data, então expirar</span>
+    <span class="arrow">→</span>
+    <span class="sticky cmd">Expirar crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky agg">Conta de crédito</span>
+    <span class="arrow">→</span>
+    <span class="sticky ev">Crédito expirado</span>
+    <span class="sticky hot">Reembolso do pedido estorna? Quem manda?</span>
+  </div>
+
+  <p>Três comandos, um aggregate: <b>Conta de crédito</b> recebe "emitir", "resgatar" e "expirar", e é a única coisa que sabe o saldo. A Promoção é <i>outro</i> aggregate, em outra faixa, e nunca aparece dentro deste — só o <code>promotion_id</code> viaja no evento. Repare no hotspot do Fluxo 2: ele é o mesmo "vive na Shopify ou na Smile?" da Lição 03, agora com uma pergunta precisa. Enquanto estiver aberto, "Resgatar crédito" pode nem ser um comando seu — pode ser um evento que <i>chega</i> da Shopify.</p>
+
+  <h2>A ponte pro código: o esqueleto do componente</h2>
+  <p>Cada post-it do mural tem um lugar na convenção de pastas do smile-core. A pasta do componente é o namespace; as pastas de camada (<code>models/</code>, <code>controllers/</code>) "são só organização e <b>não</b> adicionam segmento à constante".<sup><a href="#r7">7</a></sup></p>
+
+<pre><code>app/components/store_credit/
+  CONTEXT.md                          ← glossário (### Language) + invariantes (### Current design)
+  models/
+    account.rb                        → StoreCredit::Account          (aggregate root)
+    account/entry.rb                  → StoreCredit::Account::Entry   (filha: crédito, resgate, expiração)
+  promotion_applied/
+    issue_credit_consumer.rb          → StoreCredit::PromotionApplied::IssueCreditConsumer  (a policy)
+  jobs/
+    account/issue_credit_job.rb       → StoreCredit::Account::IssueCreditJob
+    account/expire_job.rb             → StoreCredit::Account::ExpireJob
+  shopify/
+    mirror.rb                         → StoreCredit::Shopify::Mirror   (adapter pro sistema externo)</code></pre>
+
+  <p>O aggregate root recebe os comandos como <b>métodos públicos com verbo de domínio</b> — a regra P1/P2 dos fizzy-patterns: nada de <code>StoreCreditService.process</code>.<sup><a href="#r7">7</a></sup> O invariante transacional mora dentro do verbo. O evento é publicado <i>depois</i> do commit, no tópico com nome no passado, do jeito que o smile-core já faz (<code>smile_platform.customer_signed_up</code>, <code>smile_platform.points_transaction_created</code>):</p>
+
+<pre><code>module StoreCredit
+  class Account &lt; ApplicationRecord
+    has_many :entries, dependent: :destroy   # mesma fronteira → OK
+
+    class InsufficientBalance &lt; StandardError; end
+
+    def issue!(amount, promotion_id:, expires_at:)
+      transaction do                          # UMA instância de aggregate por transação
+        entries.create!(kind: :credit, amount:, promotion_id:, expires_at:)
+        update!(balance: balance + amount)
+      end
+      DomainEventPublisher.publish(CreditIssued.new(self, amount:, promotion_id:))
+    end
+
+    def redeem!(amount)
+      raise InsufficientBalance if amount &gt; balance   # o invariante verdadeiro
+      transaction do
+        entries.create!(kind: :redemption, amount: -amount)
+        update!(balance: balance - amount)
+      end
+      DomainEventPublisher.publish(CreditRedeemed.new(self, amount:))
+    end
+  end
+end</code></pre>
+
+  <p>A policy "sempre que promoção aplicada, então emitir crédito" vira um consumer <b>fino</b>: lê o evento de <i>outro</i> contexto e enfileira um job que chama o verbo — exatamente a forma que o smile-core usa em <code>MerchantNotifications::DeadOfflineTokenEmail::Consumer</code>.<sup><a href="#r7">7</a></sup> Nome: <code>&lt;EventoNoPassado&gt;::&lt;Verbo&gt;Consumer</code>.</p>
+
+<pre><code>module StoreCredit
+  module PromotionApplied
+    class IssueCreditConsumer &lt; SingleMessageConsumer   # tópico: smile_platform.promotion_applied
+      def consume_message(message)
+        event = message.payload.fetch(:event)
+        Account::IssueCreditJob.perform_later(
+          event.fetch(:customer_id), event.fetch(:promotion_id), event.fetch(:amount)
+        )
+      end
+    end
+  end
+end</code></pre>
+
+  <div class="safety">
+    <div class="t">⚠ A armadilha: o aggregate gigante, versão Rails</div>
+    A tentação vai ser <code>Promotion has_many :credits, dependent: :destroy</code>. Isso é o <code>Product</code> de Vernon: "promoções <i>têm</i> créditos" virando fronteira de transação — e agora apagar uma promoção apaga saldo de shopper. A regra 3 de Vernon é <b>referenciar outro aggregate por identidade</b>:<sup><a href="#r5">5</a></sup> a Conta guarda <code>promotion_id</code> numa coluna, <b>sem foreign key no banco</b> e sem <code>has_one</code> cruzando componentes — a direção que o smile-core já adotou pra módulos.<sup><a href="#r7">7</a></sup> Se você precisou de um <code>transaction do</code> envolvendo models de dois componentes, a fronteira está errada.
+  </div>
+
+  <p class="next">Isso <b>não</b> é Event Sourcing: o estado vive na coluna <code>balance</code> e nas <code>entries</code> (um livro-caixa comum); os eventos publicados são <i>comunicação</i> entre contextos, não a fonte da verdade. A missão deixou Event Sourcing de fora de propósito.</p>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="ddd" data-lesson="0004" data-title="Lição 04 — Design-level Event Storming">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="1" data-note="Aggregate = comandos + eventos que precisam ser consistentes na mesma transação.">
+      <p>1. No mural de design, o que agrupa um aggregate?</p>
+      <button class="opt">Tabelas ligadas entre si por foreign key</button>
+      <button class="opt">Comandos e eventos que compartilham um invariante</button>
+      <button class="opt">Telas que o mesmo usuário sempre acessa</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="É trabalho de quem resgata ver o saldo consistente agora → transacional, dentro da Conta.">
+      <p>2. "Resgate não pode exceder o saldo." Transacional ou eventual?</p>
+      <button class="opt">Transacional, dentro do aggregate da conta</button>
+      <button class="opt">Eventual, via consumer de outro contexto</button>
+      <button class="opt">Nenhum, isso é regra de UI</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="Dois aggregates em contextos diferentes se ligam por policy: evento → consumer → verbo.">
+      <p>3. "Promoção aplicada" deve gerar "Crédito emitido". Como ligar?</p>
+      <button class="opt">Uma Promotion has_many :credits, dependent: :destroy</button>
+      <button class="opt">Uma transaction envolvendo os dois models</button>
+      <button class="opt">Policy: um consumer chama o verbo</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Regra 3 de Vernon: referência por identidade, não por objeto.">
+      <p>4. Como a Conta de crédito referencia a Promoção que a gerou?</p>
+      <button class="opt">Pelo objeto, com belongs_to e FK</button>
+      <button class="opt">Pela identidade, uma coluna de id</button>
+      <button class="opt">Pelo evento, guardando o payload inteiro</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <h2>Sua tarefa desta semana</h2>
+  <p class="next">Pegue a faixa com os pivotal events mais claros (provavelmente Store Credit). 60 minutos a dois, com o <a href="../reference/event-storming-cheat-sheet.html">cartão de Event Storming</a> e o <a href="../reference/aggregates-regras.html">cartão de Aggregates</a> abertos. Saiam com: (1) os aggregates nomeados com palavras do glossário, (2) pra cada um, a lista de comandos, eventos e o invariante que justifica a fronteira, (3) um rascunho de <code>CONTEXT.md</code> no formato do smile-core (<code>### Language</code> com <i>Avoid</i>, <code>### Current design</code> com os invariantes em negrito). Se sobrar tempo, gerem só a árvore de arquivos — sem comportamento.</p>
+  <div class="timebox" data-minutes="10" data-hint="Rodada silenciosa: cada um escreve o comando que causou cada evento. Depois juntem."></div>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf" target="_blank">Vaughn Vernon — Effective Aggregate Design, Part I</a> (PDF grátis, ~25 min): o caso do <code>Product</code> gigante e as regras 1 e 2, na voz do autor. Depois a <a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf" target="_blank">Part II</a> pelas regras 3 e 4 e o "de quem é o trabalho?". Pra definição curta, <a href="https://martinfowler.com/bliki/DDD_Aggregate.html" target="_blank">Fowler — DDD Aggregate</a> (~3 min).</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Me manda a lista de aggregates com comandos, eventos e invariantes. Eu rodo o "de quem é o trabalho?" em cada fronteira, aponto invariantes falsos e faço a revisão de design no estilo fizzy (onde mora cada verbo, o que está faltando de entidade) antes de vocês escreverem a primeira migration.
+  </div>
+
+  <p class="next">
+    <b>A seguir (Lição 05):</b> Context Map — agora que Promoções e Store Credit são dois contextos de verdade, como eles se relacionam: quem é upstream, o que é a Published Language (o evento), e por que a Conta de crédito não pode depender da Promoção.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0003-event-storming.html">← Lição 03</a>
+    <a href="../reference/aggregates-regras.html">🗂 Cartão Aggregates</a>
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/ch12.html" target="_blank">Vlad Khononov — Learning Domain-Driven Design, cap. 12</a>. Passos 5–9: comandos, policies, read models, sistemas externos, aggregates.</li>
+      <li id="r2"><a href="https://github.com/SAP/curated-resources-for-domain-driven-design/blob/main/knowledgebase/tools/eventstorming.md" target="_blank">SAP — Curated resources for DDD: EventStorming</a>. Software Design ES: "aggregates como donos do comportamento de negócio"; "Policies → Event handlers".</li>
+      <li id="r3"><a href="https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html" target="_blank">Alberto Brandolini — Introducing Event Storming (2013)</a>. Aggregate: "a porção do sistema que recebe comandos e decide se os executa".</li>
+      <li id="r4"><a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf" target="_blank">Vaughn Vernon — Effective Aggregate Design, Part I (2011)</a>. Invariantes verdadeiros; uma instância por transação; aggregates pequenos; o caso do <code>Product</code>.</li>
+      <li id="r5"><a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf" target="_blank">Vaughn Vernon — Effective Aggregate Design, Part II (2011)</a>. Referência por identidade; consistência eventual; "Ask Whose Job It Is" (regra de Evans).</li>
+      <li id="r6"><a href="https://martinfowler.com/bliki/DDD_Aggregate.html" target="_blank">Martin Fowler — DDD Aggregate</a>. Definição; "transações não devem cruzar fronteiras de aggregate".</li>
+      <li id="r7">Grounding local (verificado no repo/skill): smile-core <code>config/initializers/zeitwerk_components.rb</code> (camadas colapsam), <code>app/lib/domain_event_publisher.rb</code> (tópico <code>smile_platform.&lt;evento_no_passado&gt;</code>), <code>app/consumers/single_message_consumer.rb</code>, <code>app/components/merchant_notifications/dead_offline_token_email/consumer.rb</code>, <code>app/components/shopify/CONTEXT.md</code>; fizzy-patterns <i>rulebook/operations-vs-domain-services.md</i> e <i>rulebook/event-driven-consumers.md</i>; <i>smile-context.md</i> (sem FK nem <code>dependent: :destroy</code> entre módulos).</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+<script src="../../assets/timebox.js"></script>
+</body>
+</html>

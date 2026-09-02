@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aggregates — regras de bolso</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<link rel="stylesheet" href="../../assets/stickies.css">
+<style>
+  .rule{border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:1rem 0;background:#fff;font-family:var(--sans);font-size:.92rem}
+  .rule .n{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800}
+  .rule h3{margin:.15rem 0 .4rem;font-size:1.05rem;font-family:Georgia,serif}
+  .rule blockquote{margin:.5rem 0;font-size:.9rem}
+  .check{font-family:var(--sans);font-size:.92rem;list-style:none;padding:0}
+  .check li{padding:.45rem 0 .45rem 1.8rem;position:relative;border-bottom:1px dashed var(--rule)}
+  .check li::before{content:"☐";position:absolute;left:.2rem;top:.35rem;color:var(--accent);font-size:1.05rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Referência</p>
+  <h1>Aggregates — regras de bolso</h1>
+  <p class="sub">O que é, as quatro regras de Vernon, o desempate de Evans, e como isso vira Rails modular.</p>
+
+  <h2>1. Definições (três vozes, uma ideia)</h2>
+  <table class="ref">
+    <tr><th>Quem</th><th>Definição</th></tr>
+    <tr><td>Fowler / Evans</td><td>"Um agrupamento de objetos de domínio que pode ser tratado como uma única unidade." Um deles é o <b>aggregate root</b>: "qualquer referência de fora do aggregate deve ir só para o root". E a regra que decide tudo: <b>"transações não devem cruzar fronteiras de aggregate"</b>.<sup><a href="#r1">1</a></sup></td></tr>
+    <tr><td>Brandolini (Event Storming)</td><td>"A porção do sistema que <b>recebe comandos e decide se os executa</b>."<sup><a href="#r2">2</a></sup> No mural: o post-it amarelo-pálido grande em que você agrupa comandos azuis e os eventos laranja que eles produzem.</td></tr>
+    <tr><td>Vernon</td><td>"Aggregate é sinônimo de <b>fronteira de consistência transacional</b>." Um invariante é "uma regra de negócio que deve estar sempre consistente".<sup><a href="#r3">3</a></sup></td></tr>
+  </table>
+
+  <h2>2. As quatro regras de Vernon</h2>
+
+  <div class="rule">
+    <div class="n">Regra 1</div>
+    <h3>Modele invariantes verdadeiros em fronteiras de consistência</h3>
+    <blockquote>"Uma bounded context bem projetada modifica <b>só uma instância de aggregate por transação</b>, em todos os casos."<sup><a href="#r3">3</a></sup></blockquote>
+    <p>O que deve ser verdade <i>ao fim da transação</i> define o que fica dentro. O que pode ficar consistente "daqui a pouco" fica fora. Invariantes falsos ("se está comprometido, não pode ser removido") vêm de conveniência de composição, não do negócio — e são o que fez o aggregate <code>Product</code> do exemplo de Vernon falhar em produção.</p>
+  </div>
+
+  <div class="rule">
+    <div class="n">Regra 2</div>
+    <h3>Projete aggregates pequenos</h3>
+    <blockquote>"Limite o aggregate ao root entity e a um número mínimo de atributos e/ou propriedades de valor. O mínimo correto é: os que precisam estar consistentes com os outros, e nada mais."<sup><a href="#r3">3</a></sup></blockquote>
+    <p>Vernon cita um projeto em que <b>70% dos aggregates eram só o root</b> e os outros 30% tinham duas ou três entidades. Prefira value objects a entidades filhas: "se a instância pode ser inteiramente substituída, é value object".</p>
+  </div>
+
+  <div class="rule">
+    <div class="n">Regra 3</div>
+    <h3>Referencie outros aggregates por identidade</h3>
+    <blockquote>"Prefira referências a aggregates externos <b>só pela identidade global</b>, não por referência direta ao objeto."<sup><a href="#r4">4</a></sup></blockquote>
+    <p>Segurar o id (<code>promotion_id</code>) em vez do objeto mantém o aggregate pequeno, carrega menos, e — em sistemas distribuídos — "eventos de domínio carregando identidades de aggregates" são o que permite associações à distância.</p>
+  </div>
+
+  <div class="rule">
+    <div class="n">Regra 4</div>
+    <h3>Use consistência eventual fora da fronteira</h3>
+    <blockquote>Evans, DDD p.128: "Qualquer regra que atravesse AGGREGATES não deve ser esperada sempre atualizada. Via processamento de eventos, batch ou outros mecanismos, as outras dependências podem ser resolvidas dentro de um tempo específico."<sup><a href="#r4">4</a></sup></blockquote>
+    <p>O mecanismo: "um método de comando do aggregate publica um domain event, entregue a um ou mais assinantes assíncronos", cada um modificando <i>seu</i> aggregate em <i>sua</i> transação. Pergunte ao especialista quanto atraso ele tolera — "especialistas costumam estar mais à vontade com atraso do que os devs".</p>
+  </div>
+
+  <div class="safety">
+    <div class="t">O desempate de Evans: "de quem é o trabalho?"</div>
+    Vernon relata a regra que Evans lhe deu para escolher entre consistência transacional e eventual: <b>"pergunte se é trabalho do usuário que está executando o caso de uso deixar os dados consistentes. Se for, tente fazer transacional (obedecendo às outras regras). Se for trabalho de outro usuário, ou do sistema, deixe ser eventual."</b><sup><a href="#r4">4</a></sup> Isso expõe os invariantes reais — os que <i>têm</i> que ser transacionais.
+  </div>
+
+  <h2>3. Quando quebrar as regras (Vernon)</h2>
+  <table class="ref">
+    <tr><th>Razão</th><th>Exemplo</th><th>Cuidado</th></tr>
+    <tr><td>Conveniência de UI</td><td>Criar vários itens de uma vez num formulário em lote</td><td>Só se cada item for um aggregate completo que mantém seus próprios invariantes.</td></tr>
+    <tr><td>Falta de mecanismo técnico</td><td>Sem fila, sem jobs, sem timers</td><td>Não é o seu caso: Rails tem jobs e o smile-core tem Kafka.</td></tr>
+    <tr><td>Transações globais</td><td>Política corporativa de two-phase commit</td><td>Mesmo assim, evite tocar dois aggregates locais.</td></tr>
+    <tr><td>Performance de consulta</td><td>Referência direta pra evitar N queries</td><td>Pese contra tamanho; um read model separado costuma resolver melhor.</td></tr>
+  </table>
+
+  <h2>4. Do mural pro Rails modular</h2>
+  <table class="ref">
+    <tr><th>Conceito</th><th>Em Rails (estilo fizzy / smile-core moderno)</th><th>Regra ligada</th></tr>
+    <tr><td>Aggregate root</td><td>O model Active Record que <b>recebe o comando como método público</b>: <code>credit.redeem!(amount)</code>. Verbo no modelo, nunca <code>CreditService.process</code>.</td><td>Brandolini; fizzy P1/P2</td></tr>
+    <tr><td>Entidades filhas</td><td><code>has_many</code> dentro do <b>mesmo componente</b>, salvas na mesma transação; <code>dependent: :destroy</code> OK aqui</td><td>Regra 1</td></tr>
+    <tr><td>Value objects</td><td>Atributos + <code>composed_of</code> ou PORO imutável (<code>Money</code>, período de vigência)</td><td>Regra 2</td></tr>
+    <tr><td>Referência a outro aggregate</td><td>Coluna <code>*_id</code> <b>sem</b> FK no banco entre componentes, sem <code>has_one</code> cruzando módulo</td><td>Regra 3; smile-context</td></tr>
+    <tr><td>Domain event</td><td>Publicado <i>pelo verbo</i> do aggregate após o commit, nome no passado (<code>store_credit.issued</code>)</td><td>Regra 4</td></tr>
+    <tr><td>Policy ("sempre que X, então Y")</td><td>Consumer <b>fino</b> em <code>&lt;EventoPassado&gt;::&lt;Verbo&gt;Consumer</code> que chama um verbo de <i>outro</i> aggregate (ou enfileira um job que chama)</td><td>Regra 4; fizzy event-driven-consumers</td></tr>
+    <tr><td>Fronteira de transação</td><td>Um <code>save!</code>/<code>transaction</code> por aggregate. Se o código precisa de <code>transaction do</code> envolvendo dois models de componentes diferentes, a fronteira está errada.</td><td>Regra 1</td></tr>
+  </table>
+
+  <h2>5. Checklist: é um aggregate ou são dois?</h2>
+  <ul class="check">
+    <li>Existe uma regra que precisa ser verdade <b>no fim da mesma transação</b> envolvendo os dois? Se não → dois aggregates.</li>
+    <li>Quem executa o caso de uso é quem precisa ver o resultado consistente? Se é "o sistema" ou "outro usuário" → eventual, dois aggregates.</li>
+    <li>Dois usuários diferentes mudam essas partes ao mesmo tempo, com frequência? Se sim → separe (contenção).</li>
+    <li>A parte filha pode ser <i>substituída inteira</i> em vez de editada? → value object, não entidade.</li>
+    <li>Você consegue nomear o aggregate com um substantivo do glossário ("Conta de crédito", "Promoção")? Se o nome hesita, o aggregate ainda não existe.</li>
+  </ul>
+
+  <h2>6. Fontes</h2>
+  <div class="refs" style="margin-top:.5rem">
+    <ol>
+      <li id="r1"><a href="https://martinfowler.com/bliki/DDD_Aggregate.html" target="_blank">Martin Fowler — DDD Aggregate</a>. Definição, aggregate root, "transações não devem cruzar fronteiras de aggregate".</li>
+      <li id="r2"><a href="https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html" target="_blank">Alberto Brandolini — Introducing Event Storming (2013)</a>. Aggregate como "a porção do sistema que recebe comandos e decide se os executa".</li>
+      <li id="r3"><a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf" target="_blank">Vaughn Vernon — Effective Aggregate Design, Part I (PDF, CC BY-ND)</a>. Regras 1 e 2; invariante; "uma instância por transação"; 70% só root.</li>
+      <li id="r4"><a href="https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf" target="_blank">Vaughn Vernon — Effective Aggregate Design, Part II (PDF)</a>. Regras 3 e 4; citação de Evans p.128; "Ask Whose Job It Is"; razões pra quebrar as regras.</li>
+      <li><a href="https://www.dddcommunity.org/library/vernon_2011/" target="_blank">Índice da série (dddcommunity.org)</a>, incluindo a Part III (processo de descoberta).</li>
+    </ol>
+  </div>
+
+  <div class="footer-nav">
+    <a href="../lessons/0004-design-level-event-storming.html">← Lição 04</a>
+    <a href="event-storming-cheat-sheet.html">🗂 Cartão Event Storming</a>
+    <a href="../">🧩 Curso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+</div>
+</body>
+</html>
