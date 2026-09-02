@@ -1,0 +1,11 @@
+/* Estilo do componente timebox (assets/timebox.js). */
+.timebox{font-family:var(--sans,system-ui);border:1px solid var(--rule,#dcd9ce);border-radius:12px;padding:1rem 1.1rem;margin:1.2rem 0;
+  background:#fff;text-align:center}
+.timebox .tb-presets button,.timebox .tb-ctl button{font:inherit;font-size:.85rem;border:1px solid var(--rule,#dcd9ce);background:#fafaf6;
+  border-radius:7px;padding:.35rem .7rem;margin:.15rem;cursor:pointer}
+.timebox .tb-presets button.on{background:var(--accent,#0f766e);color:#fff;border-color:var(--accent,#0f766e)}
+.timebox .tb-clock{font-family:var(--mono,Menlo,monospace);font-size:3rem;font-weight:700;margin:.5rem 0 .3rem;letter-spacing:.02em}
+.timebox.running .tb-clock{color:var(--accent,#0f766e)}
+.timebox.done .tb-clock{color:#b91c1c}
+.timebox .tb-ctl .tb-start{background:var(--accent,#0f766e);color:#fff;border-color:var(--accent,#0f766e);font-weight:700;padding:.45rem 1rem}
+.timebox .tb-hint{font-size:.8rem;color:var(--soft,#6b6657);margin-top:.5rem}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Storming — cartão de referência</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<link rel="stylesheet" href="../../assets/stickies.css">
+<link rel="stylesheet" href="../../assets/timebox.css">
+<style>
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr}}
+  .card{border:1px solid var(--rule);border-radius:10px;padding:.9rem 1.05rem;font-family:var(--sans);font-size:.9rem;background:#fff}
+  .card h3{margin:0 0 .4rem;font-size:.95rem}
+  .card ul{margin:.3rem 0;padding-left:1.1rem}
+  .card li{margin:.25rem 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Referência</p>
+  <h1>Event Storming</h1>
+  <p class="sub">Cartão de referência para ter aberto durante a sessão — notação, formatos, protocolo a dois e a ponte pro código.</p>
+
+  <h2>1. A notação (o que cada post-it significa)</h2>
+  <p class="next">Cores canônicas do <a href="https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet" target="_blank">DDD Crew EventStorming Glossary &amp; Cheat Sheet</a>. Se estiver no Miro, use exatamente estas cores — o olho aprende a ler o mural.</p>
+
+  <table class="ref">
+    <tr><th>Post-it</th><th>Cor</th><th>O que é</th><th>Como escrever</th></tr>
+    <tr><td><span class="sticky ev">Crédito emitido</span></td><td>Laranja</td><td><b>Domain Event.</b> Algo relevante que <i>aconteceu</i> no domínio, na visão do especialista.</td><td>Frase no <b>passado</b>: sujeito + particípio. Nunca nome de tabela ou classe.</td></tr>
+    <tr><td><span class="sticky cmd">Emitir crédito</span></td><td>Azul</td><td><b>Command.</b> Decisão, ação ou intenção que dispara eventos.</td><td>Verbo no imperativo. Vem <i>antes</i> do evento na linha do tempo.</td></tr>
+    <tr><td><span class="sticky actor">Shopper</span></td><td>Amarelo pequeno</td><td><b>Actor.</b> Pessoa, papel ou time que dá o comando.</td><td>Colado no canto do comando.</td></tr>
+    <tr><td><span class="sticky ext">Shopify</span></td><td>Rosa largo</td><td><b>External System.</b> Sistema de fora que recebe ou origina eventos.</td><td>Nome do sistema. Marque o que ele <i>garante</i> e o que não.</td></tr>
+    <tr><td><span class="sticky policy">Sempre que pedido pago, então…</span></td><td>Lilás</td><td><b>Policy.</b> Regra de reação: "sempre que X acontece, fazemos Y".</td><td>Frase "sempre que…, então…". Liga um evento a um comando.</td></tr>
+    <tr><td><span class="sticky read">Saldo do shopper</span></td><td>Verde</td><td><b>Read model.</b> Informação que o ator precisa ver pra decidir.</td><td>Substantivo. Aparece antes de um comando.</td></tr>
+    <tr><td><span class="sticky hot">Estorna no reembolso?</span></td><td>Rosa neon, torto</td><td><b>Hotspot.</b> Dúvida, conflito, coisa que ninguém sabe.</td><td>Pergunta curta. <b>Não resolva agora</b> — cole e siga.</td></tr>
+    <tr><td><span class="sticky agg">Conta de crédito</span></td><td>Amarelo pálido grande</td><td><b>Aggregate.</b> A parte do sistema que recebe comandos e decide se executa.</td><td>Só no <i>Software Design</i>. No Big Picture, não.</td></tr>
+  </table>
+
+  <div class="safety">
+    <div class="t">Teste de 3 segundos: isso é um evento?</div>
+    <ul style="margin:.3rem 0;padding-left:1.1rem;font-family:var(--sans);font-size:.92rem">
+      <li>Está no passado? ("Promoção publicada", não "Publicar promoção")</li>
+      <li>O merchant ou o shopper se importaria que isso aconteceu?</li>
+      <li>Tem nome de tabela, classe, job ou endpoint? Então é <b>solução disfarçada</b> — reescreva como o que aconteceu pro negócio.</li>
+    </ul>
+  </div>
+
+  <h2>2. Os três formatos</h2>
+  <table class="ref">
+    <tr><th>Formato</th><th>Pergunta que responde</th><th>Sai dali</th><th>Quando usar no projeto</th></tr>
+    <tr><td><b>Big Picture</b></td><td>O que acontece nesse negócio, do começo ao fim?</td><td>Linha do tempo de eventos, hotspots, <b>pivotal events</b> → contextos candidatos</td><td>Primeiro. Antes de qualquer código.</td></tr>
+    <tr><td><b>Process Modelling</b></td><td>Como <i>um</i> processo funciona em detalhe (comandos, policies, read models)?</td><td>Fluxo completo de um processo, gargalos, swimlanes</td><td>Quando um trecho do Big Picture está nebuloso.</td></tr>
+    <tr><td><b>Software Design</b></td><td>Quais aggregates recebem quais comandos e emitem quais eventos, dentro de um contexto?</td><td>Aggregates, comandos, eventos, policies → esqueleto do código</td><td>Um por contexto candidato, logo antes de codar.</td></tr>
+  </table>
+  <p class="next">Fonte: <a href="https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet" target="_blank">DDD Crew</a>; o Big Picture é o passo <i>Discover</i> do <a href="https://github.com/ddd-crew/ddd-starter-modelling-process" target="_blank">DDD Starter Modelling Process</a>.</p>
+
+  <h2>3. Protocolo a dois (≈ 90 min)</h2>
+  <p>Brandolini desenhou o formato pra 6 a 8 pessoas; Khononov limita a 10. A dois, o que se perde é a <b>diversidade</b> e a <b>pressão social</b> que impedem convergir cedo demais. O protocolo abaixo recria as duas coisas artificialmente.</p>
+
+  <ol class="steps">
+    <li><b>Recrute a "pessoa das respostas"</b> <span class="time">antes</span> Alguém de Merchant Success, Suporte ou Produto que saiba como merchants rodam promoções hoje. Se não puder estar na sala, os hotspots virarão a lista de perguntas pra ela — envie no mesmo dia.</li>
+    <li><b>Divergência silenciosa</b> <span class="time">7 min</span> Cada um, sozinho e em silêncio, escreve todos os eventos que conseguir (laranja). Nada de conversa. Isso é a "exploração caótica" de um grupo grande comprimida em duas cabeças.</li>
+    <li><b>Merge + linha do tempo</b> <span class="time">15 min</span> Juntem os post-its, tirem duplicatas, ordenem no tempo. Onde discordarem do nome, escolham um e anotem o outro como <i>evitar</i> — nasce a Linguagem Ubíqua.</li>
+    <li><b>Hotspots</b> <span class="time">10 min</span> Tudo que ninguém sabe ou em que discordam vira rosa. Regra a dois: <b>máximo 2 minutos de debate por hotspot</b>; depois cola e segue.</li>
+    <li><b>Segunda rodada silenciosa</b> <span class="time">7 min</span> Agora que a linha existe, cada um preenche buracos: o que acontece <i>entre</i> dois eventos? E quando dá errado (reembolso, expiração, fraude)?</li>
+    <li><b>Pivotal events</b> <span class="time">10 min</span> Marquem os 3–5 eventos que mudam a fase do processo (ex.: "Promoção publicada", "Crédito emitido"). Tracem linhas verticais. Cada faixa é um <b>Bounded Context candidato</b>.</li>
+    <li><b>Teste de polissemia</b> <span class="time">10 min</span> Da Lição 02: a mesma palavra muda de sentido entre faixas? ("Crédito" como <i>tipo de reward</i> vs. como <i>saldo</i>.) Se sim, a fronteira é real. Se não, junte as faixas.</li>
+    <li><b>Atores e sistemas externos</b> <span class="time">10 min</span> Amarelos pequenos (merchant, shopper, Smile) e rosas largos (Shopify, gateway). Marque o que o sistema externo garante e o que ele <i>não</i> garante.</li>
+    <li><b>Registro</b> <span class="time">10 min</span> Foto ou export. Escrevam no mesmo dia: lista de eventos por contexto candidato, glossário rascunho, lista de hotspots com dono.</li>
+  </ol>
+
+  <h3>Timebox das rodadas silenciosas</h3>
+  <div class="timebox" data-minutes="7"></div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Se estiverem na mesma sala</h3>
+      <ul>
+        <li>Rolo de papel kraft na parede, ou uma parede inteira de vidro. "Seu problema é maior que seu quadro branco."</li>
+        <li>Post-its de verdade, nas cores certas. Canetão, letra grande.</li>
+        <li>Em pé. Sentado, a energia morre.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Se for remoto (Miro)</h3>
+      <ul>
+        <li>Brandolini: ferramenta digital "deixa tudo arrumado demais e nada se destaca". Compense sendo <b>deliberadamente bagunçado</b>: hotspots tortos, tamanhos diferentes.</li>
+        <li>Timeboxes de 5–7 min com <b>um só</b> conduzindo por vez; o outro só escreve.</li>
+        <li>Câmera ligada. Rolar de olhos é informação.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>4. Do mural pro código (Rails modular, estilo smile-core)</h2>
+  <table class="ref">
+    <tr><th>No mural</th><th>No código</th><th>Cuidado</th></tr>
+    <tr><td>Contexto candidato (faixa entre pivotal events)</td><td><code>app/components/&lt;contexto&gt;/</code> com <code>models/</code>, <code>jobs/</code>, <code>controllers/</code> dentro — a convenção de pastas do smile-core</td><td>Só dê nome ao componente quando o domínio insistir no nome. Nome que hesita é contexto que ainda não existe.</td></tr>
+    <tr><td>Domain Event (laranja)</td><td>Nome do evento publicado (<code>store_credit.issued</code>) e o verbo no modelo (<code>credit.issue!</code>)</td><td>Nunca <code>CreditService.process</code>. O evento já te deu o verbo e o substantivo.</td></tr>
+    <tr><td>Command (azul)</td><td>Método público do aggregate ou ação do controller</td><td>Um comando, um verbo de domínio. Nada de <code>run</code>/<code>execute</code>.</td></tr>
+    <tr><td>Policy (lilás)</td><td>Consumer/job que reage ao evento de <i>outro</i> contexto</td><td>É assim que contextos conversam — evento, não foreign key nem <code>dependent: :destroy</code> atravessando módulos.</td></tr>
+    <tr><td>External System (rosa)</td><td>Adapter na borda do contexto (<code>ShopifyGraphQL::StoreCredit</code>)</td><td>O que o sistema externo <i>não garante</i> (ex.: resgate só com login) vira regra sua.</td></tr>
+    <tr><td>Hotspot (rosa neon)</td><td>Pergunta com dono e prazo; enquanto aberto, <b>não</b> vira coluna nem enum</td><td>Codar em cima de hotspot é apostar.</td></tr>
+    <tr><td>Aggregate (amarelo pálido)</td><td>O modelo que recebe o comando e decide — próxima lição</td><td>—</td></tr>
+  </table>
+
+  <h2>5. Fontes</h2>
+  <div class="refs" style="margin-top:.5rem">
+    <ol>
+      <li><a href="https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html" target="_blank">Alberto Brandolini — Introducing Event Storming (2013)</a>. O post original: a receita, "6..8 pessoas", espaço de modelagem ilimitado.</li>
+      <li><a href="https://leanpub.com/introducing_eventstorming" target="_blank">Alberto Brandolini — Introducing EventStorming (livro, Leanpub)</a>. Facilitação em profundidade, Big Picture e Design-level.</li>
+      <li><a href="https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet" target="_blank">DDD Crew — EventStorming Glossary &amp; Cheat Sheet</a>. Notação e os três formatos. Imprima.</li>
+      <li><a href="https://blog.avanscoperta.it/2020/03/26/eventstorming-in-covid-19-times/" target="_blank">Brandolini — EventStorming in COVID-19 times</a>. O que se perde no remoto; timeboxes de 5–7 min com um só conduzindo.</li>
+      <li><a href="https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/ch12.html" target="_blank">Vlad Khononov — Learning DDD, cap. 12</a>. Os 10 passos (exploração → linha do tempo → pain points → pivotal events → comandos → policies → read models → sistemas externos → aggregates → bounded contexts); máximo 10 participantes.</li>
+      <li><a href="https://github.com/ddd-crew/ddd-starter-modelling-process" target="_blank">DDD Crew — DDD Starter Modelling Process</a>. Onde o Event Storming entra num projeto novo (Discover).</li>
+      <li><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/StoreCreditAccount" target="_blank">Shopify — StoreCreditAccount</a>. O sistema externo do exemplo: saldo por moeda, dono intransferível, resgate só com new customer accounts.</li>
+    </ol>
+  </div>
+
+  <div class="footer-nav">
+    <a href="../lessons/0003-event-storming.html">← Lição 03</a>
+    <a href="../">🧩 Curso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+</div>
+<script src="../../assets/timebox.js"></script>
+</body>
+</html>

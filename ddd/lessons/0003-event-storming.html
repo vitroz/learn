@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lição 03 — Event Storming a dois</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<link rel="stylesheet" href="../../assets/stickies.css">
+<link rel="stylesheet" href="../../assets/timebox.css">
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Domain-Driven Design · Lição 03 · Estratégico</p>
+  <h1>Event Storming a dois</h1>
+  <p class="sub">Descobrir o domínio de promoções e store credit numa tarde — antes de abrir o editor.</p>
+
+  <p class="lead">Vocês são dois, começando do zero: <b>promoções</b> pra empurrar as vendas do merchant e <b>store credit</b> pro shopper. A tentação é abrir o Rails e rodar <code>rails g model Promotion</code>. O <b>Event Storming</b> é o workshop que Alberto Brandolini criou pra fazer o contrário: descobrir o que <i>acontece</i> no negócio, em post-its, numa linha do tempo — e só então decidir o que vira código. Ele foi desenhado pra salas de 6 a 8 pessoas. Esta lição te dá a notação, e um protocolo honesto pra quando a "sala" são duas cadeiras.</p>
+
+  <div class="recall">
+    <b>Recuperando as Lições 01 e 02:</b> a Linguagem Ubíqua é a língua do modelo, escrita no código. O Bounded Context é a fronteira onde essa língua vale — e o sinal dela é a polissemia ("depende de qual time você pergunta"). O Event Storming é a forma mais rápida de <b>gerar</b> essa língua e <b>achar</b> essas fronteiras num projeto que ainda não existe.
+  </div>
+
+  <h2>O que é</h2>
+  <blockquote>"Um formato de workshop pra explorar rapidamente domínios de negócio complexos" — que junta "as pessoas com as perguntas e as pessoas que sabem as respostas na mesma sala".<sup><a href="#r1">1</a></sup></blockquote>
+  <p>A mecânica central é de uma simplicidade quase suspeita: cada participante escreve <b>Domain Events</b> — coisas que aconteceram, relevantes pro negócio — em post-its <b>laranja</b>, no <b>passado</b>, e cola numa linha do tempo. "Seu problema é maior que seu quadro branco", diz Brandolini; então a superfície é ilimitada — um rolo de papel na parede inteira.<sup><a href="#r1">1</a></sup> Em cima da linha de eventos entram as outras cores: comandos, atores, sistemas externos, e os <b>hotspots</b> rosa-neon pra tudo que ninguém sabe.<sup><a href="#r2">2</a></sup></p>
+
+  <div class="legend">
+    <span><i class="sw" style="background:#fbb040"></i>Domain Event</span>
+    <span><i class="sw" style="background:#7fb3e6"></i>Command</span>
+    <span><i class="sw" style="background:#fff59d"></i>Actor</span>
+    <span><i class="sw" style="background:#f8b4c8"></i>External System</span>
+    <span><i class="sw" style="background:#c9a7e8"></i>Policy</span>
+    <span><i class="sw" style="background:#ff2e88"></i>Hotspot</span>
+  </div>
+
+  <p>Existem três formatos, do mais largo ao mais fundo: <b>Big Picture</b> (o negócio inteiro; revela os Bounded Contexts emergentes), <b>Process Modelling</b> (um processo em detalhe) e <b>Software Design</b> (aggregates e comandos dentro de um contexto).<sup><a href="#r2">2</a></sup> Num projeto novo, o Big Picture vem primeiro — é o passo <i>Discover</i> do DDD Starter Modelling Process.<sup><a href="#r5">5</a></sup> O Software Design é a próxima lição.</p>
+
+  <h2>O problema honesto: vocês são dois</h2>
+  <p>Brandolini pede "6..8 pessoas, com a mistura certa dos que sabem as perguntas e dos que sabem as respostas".<sup><a href="#r1">1</a></sup> Khononov limita a 10.<sup><a href="#r4">4</a></sup> O que faz o formato funcionar é a <b>diversidade</b> (cada um vê um pedaço) e a <b>exploração caótica em paralelo</b> (todo mundo escrevendo ao mesmo tempo, sem consenso prévio). Dois devs sozinhos falham de um jeito previsível: inventam o domínio que gostariam de implementar, convergem em dez minutos e não sabem as respostas que um merchant saberia.</p>
+  <p>Brandolini viveu uma perda parecida quando o mundo foi pro remoto: "ainda não existe Event Storming remoto", escreveu — o que se perde é a imersão, a linguagem corporal, a pressão dos pares. Mas ele também mostrou o que compensa: <b>sessões curtas de 5 a 7 minutos em que só uma pessoa conduz</b>, porque isso "força as pessoas a pensar antes" e evita a interrupção contínua.<sup><a href="#r3">3</a></sup> A adaptação pra dupla usa exatamente isso:</p>
+
+  <ol class="steps">
+    <li><b>Recrute a "pessoa das respostas" — ao menos assíncrona.</b> Alguém de Merchant Success, Suporte ou Produto que saiba como merchants fazem promoções hoje. Se não puder estar presente, os hotspots virarão a lista de perguntas pra ela, enviada no mesmo dia.</li>
+    <li><b>Divergência silenciosa, 7 minutos.</b> Cada um escreve eventos sozinho, sem falar. É a exploração caótica de um grupo grande, comprimida em duas cabeças.</li>
+    <li><b>Merge e linha do tempo.</b> Tirem duplicatas, ordenem. Onde discordarem do nome, escolham um e anotem o perdedor como <i>evitar</i> — a Linguagem Ubíqua nasce aqui.</li>
+    <li><b>Hotspots com limite: 2 minutos de debate, depois cola e segue.</b> A armadilha da dupla é resolver tudo na hora; o post-it rosa existe pra não resolver.</li>
+    <li><b>Pivotal events → contextos candidatos → teste de polissemia da Lição 02.</b></li>
+  </ol>
+  <p class="next">O protocolo completo, com tempos e o que fazer em sala ou no Miro, está no <a href="../reference/event-storming-cheat-sheet.html">cartão de referência</a>. O cronômetro abaixo é pra rodada silenciosa:</p>
+  <div class="timebox" data-minutes="7"></div>
+
+  <h2>Exemplo: os primeiros sete minutos do seu mural</h2>
+  <p>Depois da divergência silenciosa e do merge, a linha do tempo de vocês pode parecer com isto. Repare que <b>tudo está no passado</b> e nada tem nome de tabela:</p>
+
+  <div class="board">
+    <span class="sticky actor">Merchant</span>
+    <span class="sticky ev">Promoção criada</span>
+    <span class="sticky ev pivot">Promoção publicada</span>
+    <span class="sticky actor">Shopper</span>
+    <span class="sticky ev">Promoção vista na loja</span>
+    <span class="sticky ev">Pedido feito</span>
+    <span class="sticky ev">Promoção aplicada ao pedido</span>
+    <span class="sticky ev pivot">Crédito emitido pro shopper</span>
+    <span class="sticky ext">Shopify (StoreCreditAccount)</span>
+    <span class="sticky ev">Crédito resgatado no checkout</span>
+    <span class="sticky ev">Crédito expirado</span>
+    <span class="sticky hot">Reembolso estorna o crédito?</span>
+    <span class="sticky hot">Crédito vive na Shopify ou na Smile?</span>
+    <span class="sticky hot">"Promoção" = ActivityRuleBonus que já existe?</span>
+  </div>
+
+  <p>Os dois eventos com borda preta são os <b>pivotal events</b>: depois de "Promoção publicada" o processo muda de fase (de configurar pra vender); depois de "Crédito emitido" muda de novo (de vender pra ter um saldo que vive, é gasto e expira). Traçando linhas verticais neles, aparecem <b>três faixas</b>:</p>
+
+  <div class="board">
+    <span class="sticky agg" style="max-width:none">Promoções — regra, vigência, publicação</span>
+    <span class="divider"></span>
+    <span class="sticky agg" style="max-width:none">Store Credit — emissão, estorno, expiração</span>
+    <span class="divider"></span>
+    <span class="sticky agg" style="max-width:none">Shopify — o sistema externo que guarda o saldo</span>
+  </div>
+
+  <p>Agora o teste da Lição 02. "Crédito" muda de sentido entre a faixa do meio e o mundo de hoje do smile-core? Muda: hoje <code>Reward::ShopifyStoreCredit</code> é um <i>tipo de reward</i> — algo que o shopper resgata com pontos — e o saldo é lido ao vivo da Shopify, não existe um livro-caixa na Smile. No projeto novo, "crédito" é um <i>saldo emitido por uma promoção</i>, com ciclo de vida próprio. Mesma palavra, dois modelos. <b>Isso é uma fronteira real</b>, não um defeito — e é o hotspot rosa "vive na Shopify ou na Smile?" que decide se a faixa do meio é um contexto seu ou só um adapter pro sistema externo.</p>
+
+  <div class="safety">
+    <div class="t">⚠ A armadilha dos dois devs: modelar a solução</div>
+    Se um post-it tem nome de tabela, classe, job ou endpoint ("<span class="sticky bad" style="font-size:.75rem;padding:.2rem .4rem;min-width:0;transform:none">store_credits inserido</span>"), não é um evento — é você codando em post-it. Reescreva como o que aconteceu <i>pro merchant ou pro shopper</i>. O Shopify diz que o saldo "só é resgatável no checkout quando o dono está autenticado via new customer accounts"<sup><a href="#r6">6</a></sup>: isso é um evento que <b>não</b> acontece ("Crédito não resgatado — shopper sem login") e merece um post-it laranja, não um comentário no código.
+  </div>
+
+  <h2>A ponte pro código</h2>
+  <p>Cada faixa é um <b>Bounded Context candidato</b>. No smile-core, um contexto vira <code>app/components/&lt;contexto&gt;/</code> — uma convenção de pastas (não Packwerk, por decisão registrada em ADR no repo), com <code>models/</code>, <code>jobs/</code> e <code>controllers/</code> dentro. Os post-its laranja são o seu vocabulário futuro: o nome do evento publicado (<code>store_credit.issued</code>) e o verbo no modelo (<code>credit.issue!</code>, <code>promotion.publish!</code>). Nunca <code>PromotionService.process</code> — o mural já te entregou o substantivo e o verbo.<sup><a href="#r7">7</a></sup></p>
+
+  <div class="compare">
+    <div class="h l">❌ Do editor pro domínio</div>
+    <div class="h">✅ Do mural pro editor</div>
+    <div class="l"><span class="bad">rails g model Promotion<br>class PromotionService<br>&nbsp;&nbsp;def process(order)</span></div>
+    <div><span class="good">app/components/promotions/<br>&nbsp;&nbsp;models/promotions/promotion.rb<br>&nbsp;&nbsp;&nbsp;&nbsp;def publish! → "promotion.published"</span></div>
+  </div>
+
+  <p>Uma cautela, da própria disciplina dos fizzy-patterns: <b>só dê nome ao componente quando o domínio insistir no nome</b>. "Store Credit" pode ser um contexto — ou pode ser só um adapter dentro de Promoções, se o hotspot rosa disser que o saldo é da Shopify. Enquanto o hotspot está aberto, não vira pasta, nem coluna, nem enum.</p>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="ddd" data-lesson="0003" data-title="Lição 03 — Event Storming a dois">
+    <h3>Pratique agora — recupere de memória</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Clique na resposta.</p>
+
+    <div class="q" data-correct="0" data-note="Domain Event: laranja, no passado, relevante pro especialista.">
+      <p>1. Como se escreve um Domain Event no Event Storming?</p>
+      <button class="opt">Frase no passado, em post-it laranja</button>
+      <button class="opt">Verbo no imperativo, em post-it azul</button>
+      <button class="opt">Nome da tabela, em post-it verde</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="O hotspot existe pra não resolver na hora — 2 minutos e segue.">
+      <p>2. Você e seu par discordam se o reembolso estorna o crédito. E agora?</p>
+      <button class="opt">Parar tudo e decidir agora mesmo</button>
+      <button class="opt">Colar um hotspot rosa e seguir</button>
+      <button class="opt">Apagar o evento e ignorar isso</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Recria a exploração caótica em paralelo que um grupo grande tem de graça.">
+      <p>3. Por que a dupla começa com 7 minutos de escrita em silêncio?</p>
+      <button class="opt">Para evitar convergir cedo demais em dupla</button>
+      <button class="opt">Para o sênior conduzir a sessão inteira</button>
+      <button class="opt">Para terminar a sessão antes do almoço</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Pivotal events cortam a linha do tempo em faixas; cada faixa é um contexto candidato.">
+      <p>4. O que os pivotal events revelam no Big Picture?</p>
+      <button class="opt">As tabelas que o banco vai precisar</button>
+      <button class="opt">As fronteiras candidatas dos futuros Bounded Contexts</button>
+      <button class="opt">Os jobs assíncronos que o sistema roda</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <h2>Sua tarefa desta semana</h2>
+  <p class="next">Marque 90 minutos com seu par. Sigam o <a href="../reference/event-storming-cheat-sheet.html">protocolo a dois do cartão</a>. Saiam com três coisas escritas no mesmo dia: a lista de eventos por faixa, um glossário rascunho (com os nomes "a evitar") e a lista de hotspots com dono. Não escrevam código.</p>
+
+  <div class="primary">
+    <div class="t">📌 Fonte primária para aprofundar</div>
+    <p style="margin:.4rem 0 0">Leia <a href="https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html" target="_blank">Alberto Brandolini — “Introducing Event Storming” (2013)</a> (~10 min): o post que inventou a coisa, com a receita inteira na voz do autor. Depois imprima o <a href="https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet" target="_blank">DDD Crew EventStorming cheat sheet</a> e leve pra sessão. Se for mergulhar, o livro é <a href="https://leanpub.com/introducing_eventstorming" target="_blank">Introducing EventStorming</a> (Leanpub).</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>Eu sou seu professor.</b> Depois da sessão, <b>me manda a foto do mural</b> (ou a lista de eventos em texto). Eu faço o papel de facilitador que faltou na sala: aponto eventos que são solução disfarçada, sugiro pivotal events que vocês não marcaram e a gente testa as fronteiras juntos. Se quiser, também rodo o teste de polissemia contra o smile-core de verdade.
+  </div>
+
+  <p class="next">
+    <b>A seguir (Lição 04):</b> Software Design Event Storming — de uma faixa candidata pros aggregates, comandos e policies, e daí pro primeiro esqueleto de <code>app/components/</code>. Context Map fica pra depois, quando houver dois contextos de verdade pra mapear.
+  </p>
+
+  <div class="footer-nav">
+    <a href="0002-bounded-context.html">← Lição 02</a>
+    <a href="../reference/event-storming-cheat-sheet.html">🗂 Cartão de referência</a>
+    <a href="../../progresso/">📊 Meu progresso</a>
+    <a href="../../">🏠 Meus cursos</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html" target="_blank">Alberto Brandolini — Introducing Event Storming (2013)</a>. Definição, "6..8 pessoas", "seu problema é maior que seu quadro branco", eventos laranja na linha do tempo.</li>
+      <li id="r2"><a href="https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet" target="_blank">DDD Crew — EventStorming Glossary &amp; Cheat Sheet</a>. Notação por cor e os três formatos; Big Picture "revela bounded contexts emergentes".</li>
+      <li id="r3"><a href="https://blog.avanscoperta.it/2020/03/26/eventstorming-in-covid-19-times/" target="_blank">Alberto Brandolini — EventStorming in COVID-19 times (2020)</a>. "Ainda não existe Event Storming remoto"; sessões de 5–7 min com um só conduzindo.</li>
+      <li id="r4"><a href="https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/ch12.html" target="_blank">Vlad Khononov — Learning Domain-Driven Design, cap. 12</a>. Os 10 passos e o limite de 10 participantes.</li>
+      <li id="r5"><a href="https://github.com/ddd-crew/ddd-starter-modelling-process" target="_blank">DDD Crew — DDD Starter Modelling Process</a>. Event Storming como o passo <i>Discover</i> num projeto novo.</li>
+      <li id="r6"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/StoreCreditAccount" target="_blank">Shopify — StoreCreditAccount (GraphQL Admin API)</a>. Saldo por moeda, dono intransferível, resgate só com new customer accounts; mutations <code>storeCreditAccountCredit</code>/<code>Debit</code>.</li>
+      <li id="r7">fizzy-patterns (skill local) — <i>rulebook/naming.md</i> P1/P2 (nada de <code>*Service.process</code>) e <i>rulebook/bounded-context-shapes.md</i> ("nomear contexto especulativo é um desejo, não um contexto"); smile-core, ADR <i>0001-platform-code-lives-in-app-components</i>.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+<script src="../../assets/timebox.js"></script>
+</body>
+</html>
