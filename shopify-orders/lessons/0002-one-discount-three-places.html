@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lesson 02 — One discount, three places</title>
+<title>Lesson 02 — One discount, two places</title>
 <link rel="stylesheet" href="../../assets/lesson.css">
 <style>
   .chain{font-family:var(--mono);font-size:.78rem;line-height:1.5;background:#f3efe2;border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;white-space:pre}
@@ -13,136 +13,160 @@
 <body>
 <div class="wrap">
 
-  <p class="kicker">Shopify Orders · Lesson 02 · Discounts</p>
-  <h1>One discount, three places</h1>
-  <p class="sub">Codes, applications, allocations — and the two ways <code>total_discounts</code> will lie to you.</p>
+  <p class="kicker">Shopify Orders · Lesson 02 · Discounts · GraphQL Admin API</p>
+  <h1>One discount, two places</h1>
+  <p class="sub">Applications say what was meant. Allocations say what happened. And two ways the totals will lie to you.</p>
 
-  <p class="lead">Lesson 01 ended with SAVE10 taking 12.00 off a hoodie. That one discount is written into the payload three times, in three fields with three jobs. Merchants then stack a free shipping code and an automatic promotion on top, and the header numbers stop agreeing with each other. They are not wrong. Each field is answering a different question. This lesson teaches you which question each one answers, using the same order from Lesson 01 with a cap added.</p>
+  <p class="lead">Lesson 01 ended with SAVE10 taking 12.00 off a hoodie. In GraphQL that one discount is written twice: once as a <code>DiscountApplication</code> on the order, the rule and its intent, and once as a <code>DiscountAllocation</code> on the line, the amount that landed. Merchants then stack a free shipping code and an automatic promotion on top, and the header numbers stop agreeing with each other. They are not wrong. Each field is answering a different question. This lesson teaches you which question each one answers, using the order from Lesson 01 with a cap added.</p>
 
   <div class="recall">
-    <b>Recall from Lesson 01:</b> <code>subtotal_price</code> is the sum of line values, and a line value is <code>price × quantity − total_discount</code>. Only discounts move the subtotal. Hold that while the discount fields multiply.
+    <b>Recall from Lesson 01:</b> <code>subtotalPriceSet</code> is the sum of line values, and a line value is <code>originalTotalSet</code> minus the sum of its <code>discountAllocations</code>. Only discounts move the subtotal. Hold that while the discount fields multiply.
   </div>
 
-  <h2>The three places</h2>
+  <h2>The two places</h2>
   <table class="ref">
     <tr><th>field</th><th>answers</th><th>lives on</th></tr>
-    <tr><td><code>discount_codes</code></td><td>which codes did the customer type, and what did each produce</td><td>the order</td></tr>
-    <tr><td><code>discount_applications</code></td><td>what rules were applied, in what order, targeting what</td><td>the order</td></tr>
-    <tr><td><code>discount_allocations</code></td><td>how much of each rule landed on this line</td><td>each line and shipping line</td></tr>
+    <tr><td><code>discountApplications</code></td><td>what rules were applied, in what order, targeting what</td><td>the order</td></tr>
+    <tr><td><code>discountAllocations</code></td><td>how much of each rule landed on this line</td><td>each line item and shipping line</td></tr>
+    <tr><td><code>discountCodes</code></td><td>which code strings the customer typed, nothing else</td><td>the order</td></tr>
   </table>
-  <p>Shopify calls <code>discount_allocations</code> "an ordered list of amounts allocated by discount applications",<sup><a href="#r1">1</a></sup> and each allocation points back to an application by index. The application's <code>index</code> is "an ordered index that can be used to identify the discount application and indicate the precedence of the discount application for calculations".<sup><a href="#r2">2</a></sup> Precedence matters in step 8.</p>
+  <p>Shopify puts it plainly: "While DiscountApplication captures the discount's intentions and rules, the DiscountAllocation object shows the final calculated discount amount applied to each line."<sup><a href="#r1">1</a></sup> Each allocation points back to its application, whose <code>index</code> "indicate[s] the precedence of the discount application for calculations".<sup><a href="#r2">2</a></sup> Precedence matters in step 8.</p>
+  <p>Add these to the Lesson 01 query:</p>
+<pre><code>discountCodes
+discountApplications(first: 10) {
+  nodes {
+    __typename index allocationMethod targetSelection targetType
+    value { ... on MoneyV2 { amount } ... on PricingPercentageValue { percentage } }
+    ... on DiscountCodeApplication  { code }
+    ... on AutomaticDiscountApplication { title }
+  }
+}
+shippingLines(first: 5) { nodes {
+  discountedPriceSet { shopMoney { amount } }
+  discountAllocations { allocatedAmountSet { shopMoney { amount } } discountApplication { index } }
+} }</code></pre>
 
   <h2>Step 6. A second line. The discount splits</h2>
-  <p>Add a Cap at 25.00. SAVE10 has <code>allocation_method: across</code>, so 10% of 145.00 = 14.50 spreads in proportion to line value.</p>
-<pre><code>"line_items": [
-  { "title": "Hoodie", "price": "60.00", "quantity": 2, "total_discount": "12.00",
-    "discount_allocations": [ { "amount": "12.00", "discount_application_index": 0 } ] },
-  { "title": "Cap", "price": "25.00", "quantity": 1, "total_discount": "2.50",
-    "discount_allocations": [ { "amount": "2.50", "discount_application_index": 0 } ] } ],
-"discount_codes": [ { "code": "SAVE10", "amount": "14.50", "type": "percentage" } ],
-"total_line_items_price": "145.00",
-"total_discounts": "14.50",
-"subtotal_price": "130.50",
-"total_tax": "17.10",
-"total_price": "159.60"</code></pre>
+  <p>Add a Cap at 25.00. SAVE10 has <code>allocationMethod: ACROSS</code>, "the value is spread across all entitled lines",<sup><a href="#r3">3</a></sup> so 10% of 145.00 = 14.50 spreads in proportion to line value.</p>
+<pre><code>"lineItems": { "nodes": [
+  { "title": "Hoodie", "originalTotalSet": { "shopMoney": { "amount": "120.0" } },
+    "discountAllocations": [ { "allocatedAmountSet": { "shopMoney": { "amount": "12.0" } },
+                               "discountApplication": { "index": 0 } } ] },
+  { "title": "Cap", "originalTotalSet": { "shopMoney": { "amount": "25.0" } },
+    "discountAllocations": [ { "allocatedAmountSet": { "shopMoney": { "amount": "2.5" } },
+                               "discountApplication": { "index": 0 } } ] } ] },
+"discountApplications": { "nodes": [
+  { "__typename": "DiscountCodeApplication", "index": 0, "code": "SAVE10",
+    "value": { "percentage": 10.0 }, "allocationMethod": "ACROSS",
+    "targetSelection": "ALL", "targetType": "LINE_ITEM" } ] },
+"discountCodes": [ "SAVE10" ],
+"totalDiscountsSet": { "shopMoney": { "amount": "14.5" } },
+"subtotalPriceSet":  { "shopMoney": { "amount": "130.5" } },
+"totalTaxSet":       { "shopMoney": { "amount": "17.1" } },
+"totalPriceSet":     { "shopMoney": { "amount": "159.6" } }</code></pre>
   <table class="ref">
-    <tr><th>line</th><th class="n">price × qty</th><th class="n">total_discount</th><th class="n">line value</th></tr>
+    <tr><th>line</th><th class="n">originalTotal</th><th class="n">allocations</th><th class="n">line value</th></tr>
     <tr><td>Hoodie</td><td class="n">120.00</td><td class="n">12.00</td><td class="n">108.00</td></tr>
     <tr><td>Cap</td><td class="n">25.00</td><td class="n">2.50</td><td class="n">22.50</td></tr>
     <tr><td>sum</td><td class="n">145.00</td><td class="n">14.50</td><td class="n">130.50</td></tr>
   </table>
-  <p>Three things agree here and you should check them every time: the code's <code>amount</code> equals the sum of its allocations across lines; the sum of <code>total_discount</code> equals <code>total_discounts</code>; the sum of line values equals <code>subtotal_price</code>. Tax is 12.96 + 2.70 + 1.44 shipping = 17.10.</p>
+  <p>Two things agree here and you should check them every time: the sum of allocations pointing at index 0 is what SAVE10 gave away; the sum of all allocations equals <code>totalDiscountsSet</code>; the sum of line values equals <code>subtotalPriceSet</code>. Notice <code>targetSelection: ALL</code>, "the discount is allocated onto all the lines".<sup><a href="#r3">3</a></sup> An order-wide code is still allocated line by line. That is why the per-line formula works.</p>
 
   <h2>Step 7. Free shipping. The first lie</h2>
   <p>Add FREESHIP. It targets the shipping line, not the products.</p>
-<pre><code>"discount_codes": [
-  { "code": "SAVE10", "amount": "14.50", "type": "percentage" },
-  { "code": "FREESHIP", "amount": "12.00", "type": "shipping" } ],
-"discount_applications": [
-  { "code": "SAVE10", "target_type": "line_item", "allocation_method": "across" },
-  { "code": "FREESHIP", "target_type": "shipping_line", "value": "100.0", "value_type": "percentage" } ],
-"shipping_lines": [
-  { "price": "12.00", "discounted_price": "0.00",
-    "discount_allocations": [ { "amount": "12.00", "discount_application_index": 1 } ],
-    "tax_lines": [] } ],
-"total_discounts": "26.50",
-"subtotal_price": "130.50",
-"total_tax": "15.66",
-"total_price": "146.16"</code></pre>
+<pre><code>"discountApplications": { "nodes": [
+  { "__typename": "DiscountCodeApplication", "index": 0, "code": "SAVE10", "targetType": "LINE_ITEM", "...": "" },
+  { "__typename": "DiscountCodeApplication", "index": 1, "code": "FREESHIP",
+    "value": { "percentage": 100.0 }, "allocationMethod": "EACH",
+    "targetSelection": "ALL", "targetType": "SHIPPING_LINE" } ] },
+"discountCodes": [ "SAVE10", "FREESHIP" ],
+"shippingLines": { "nodes": [
+  { "originalPriceSet":   { "shopMoney": { "amount": "12.0" } },
+    "discountedPriceSet": { "shopMoney": { "amount": "0.0" } },
+    "discountAllocations": [ { "allocatedAmountSet": { "shopMoney": { "amount": "12.0" } },
+                               "discountApplication": { "index": 1 } } ],
+    "taxLines": [] } ] },
+"totalDiscountsSet":     { "shopMoney": { "amount": "26.5" } },
+"totalShippingPriceSet": { "shopMoney": { "amount": "0.0" } },
+"subtotalPriceSet":      { "shopMoney": { "amount": "130.5" } },
+"totalTaxSet":           { "shopMoney": { "amount": "15.66" } },
+"totalPriceSet":         { "shopMoney": { "amount": "146.16" } }</code></pre>
   <p>Watch what moved and what did not:</p>
   <ol class="steps">
-    <li><b><code>subtotal_price</code> stayed at 130.50.</b> Shipping discounts live on the total side of the chain.</li>
-    <li><b><code>total_discounts</code> jumped to 26.50.</b> It mixes product and shipping discounts into one number.</li>
-    <li><b>Shipping tax vanished.</b> Tax is charged on <code>discounted_price</code>, now 0.00. Total: 130.50 + 0.00 + 15.66 = 146.16.</li>
+    <li><b><code>subtotalPriceSet</code> stayed at 130.50.</b> Shipping discounts live on the total side of the chain.</li>
+    <li><b><code>totalDiscountsSet</code> jumped to 26.50.</b> It mixes product and shipping discounts into one number.</li>
+    <li><b>Shipping tax vanished.</b> Tax is charged on <code>discountedPriceSet</code>, now 0.00. Total: 130.50 + 0.00 + 15.66 = 146.16.</li>
   </ol>
-  <p>This is the first lie: if you subtract <code>total_discounts</code> from anything that already contains shipping, you remove the 12.00 twice. smile-core's normalizer avoids it by subtracting the <code>type: shipping</code> amounts out of <code>total_discounts</code> before touching the merchandise base.<sup><a href="#r4">4</a></sup></p>
+  <p>This is the first lie: if you subtract <code>totalDiscountsSet</code> from anything that already contains shipping, you remove the 12.00 twice. The clean way to tell the two kinds apart is <code>targetType</code>: <code>LINE_ITEM</code> or <code>SHIPPING_LINE</code>.<sup><a href="#r2">2</a></sup> <code>discountCodes</code> cannot help; it is a list of strings.<sup><a href="#r4">4</a></sup></p>
 
   <h2>Step 8. An automatic discount. The second lie</h2>
-  <p>The merchant runs an automatic discount: 5.00 off each hoodie. Shopify applies product discounts first and order discounts "to the revised subtotal after product discounts".<sup><a href="#r3">3</a></sup> So the automatic one goes first, then SAVE10 on the reduced prices.</p>
-<pre><code>"discount_applications": [
-  { "type": "automatic", "title": "Hoodie Season", "value": "5.0", "value_type": "fixed_amount",
-    "target_type": "line_item", "target_selection": "entitled", "allocation_method": "each" },
-  { "type": "discount_code", "code": "SAVE10", "value": "10.0", "value_type": "percentage",
-    "target_type": "line_item", "target_selection": "all", "allocation_method": "across" },
-  { "type": "discount_code", "code": "FREESHIP", "target_type": "shipping_line" } ],
-"discount_codes": [
-  { "code": "SAVE10", "amount": "13.50", "type": "percentage" },
-  { "code": "FREESHIP", "amount": "12.00", "type": "shipping" } ],
-"line_items": [
-  { "title": "Hoodie", "price": "60.00", "quantity": 2, "total_discount": "21.00",
-    "discount_allocations": [
-      { "amount": "10.00", "discount_application_index": 0 },
-      { "amount": "11.00", "discount_application_index": 1 } ] },
-  { "title": "Cap", "price": "25.00", "quantity": 1, "total_discount": "2.50",
-    "discount_allocations": [ { "amount": "2.50", "discount_application_index": 1 } ] } ],
-"total_line_items_price": "145.00",
-"total_discounts": "35.50",
-"subtotal_price": "121.50",
-"total_tax": "14.58",
-"total_price": "136.08"</code></pre>
+  <p>The merchant runs an automatic discount: 5.00 off each hoodie. Shopify applies product discounts first and order discounts "to the revised subtotal after product discounts".<sup><a href="#r5">5</a></sup> So the automatic one takes index 0, and SAVE10 works on the reduced prices.</p>
+<pre><code>"discountApplications": { "nodes": [
+  { "__typename": "AutomaticDiscountApplication", "index": 0, "title": "Hoodie Season",
+    "value": { "amount": "5.0" }, "allocationMethod": "EACH",
+    "targetSelection": "ENTITLED", "targetType": "LINE_ITEM" },
+  { "__typename": "DiscountCodeApplication", "index": 1, "code": "SAVE10",
+    "value": { "percentage": 10.0 }, "allocationMethod": "ACROSS",
+    "targetSelection": "ALL", "targetType": "LINE_ITEM" },
+  { "__typename": "DiscountCodeApplication", "index": 2, "code": "FREESHIP",
+    "value": { "percentage": 100.0 }, "targetType": "SHIPPING_LINE" } ] },
+"discountCodes": [ "SAVE10", "FREESHIP" ],
+"lineItems": { "nodes": [
+  { "title": "Hoodie", "originalTotalSet": { "shopMoney": { "amount": "120.0" } },
+    "discountAllocations": [
+      { "allocatedAmountSet": { "shopMoney": { "amount": "10.0" } }, "discountApplication": { "index": 0 } },
+      { "allocatedAmountSet": { "shopMoney": { "amount": "11.0" } }, "discountApplication": { "index": 1 } } ] },
+  { "title": "Cap", "originalTotalSet": { "shopMoney": { "amount": "25.0" } },
+    "discountAllocations": [
+      { "allocatedAmountSet": { "shopMoney": { "amount": "2.5" } }, "discountApplication": { "index": 1 } } ] } ] },
+"totalDiscountsSet": { "shopMoney": { "amount": "35.5" } },
+"subtotalPriceSet":  { "shopMoney": { "amount": "121.5" } },
+"totalTaxSet":       { "shopMoney": { "amount": "14.58" } },
+"totalPriceSet":     { "shopMoney": { "amount": "136.08" } }</code></pre>
 
-<div class="chain">discount_applications           line_items[Hoodie].discount_allocations
-[0] automatic  5.00 each   ◀──── { amount 10.00, index 0 }
-[1] SAVE10     10% across  ◀──── { amount 11.00, index 1 }    total_discount 21.00
-[2] FREESHIP   shipping    ◀──── shipping_lines[0].discount_allocations { 12.00, index 2 }</div>
+<div class="chain">discountApplications.nodes              lineItems[Hoodie].discountAllocations
+[0] Automatic  5.00 EACH  ENTITLED  ◀──── { 10.00, discountApplication.index 0 }
+[1] SAVE10     10%  ACROSS ALL      ◀──── { 11.00, discountApplication.index 1 }   line value 99.00
+[2] FREESHIP   100% SHIPPING_LINE   ◀──── shippingLines[0].discountAllocations { 12.00, index 2 }</div>
 
   <p>The shape changed, not just the numbers:</p>
   <ol class="steps">
-    <li><b>The automatic discount took index 0.</b> Every other allocation index shifted by one. Never cache indexes across webhooks.</li>
-    <li><b><code>discount_codes</code> does not list it.</b> Its amounts sum to 25.50 while <code>total_discounts</code> is 35.50. The 10.00 gap is the automatic discount. This is the second lie: <code>discount_codes</code> is only what the customer typed.</li>
-    <li><b>SAVE10 shrank from 14.50 to 13.50.</b> It applied to 110.00 + 25.00, not 145.00. Whether two discounts stack at all depends on the merchant's combination settings; a customer can enter up to 5 product or order codes and 1 shipping code.<sup><a href="#r3">3</a></sup></li>
+    <li><b>The automatic discount took index 0.</b> Every other index shifted by one. Match allocations to applications by the <code>discountApplication.index</code> in the same response; never store indexes.</li>
+    <li><b><code>discountCodes</code> does not mention it.</b> It reads <code>["SAVE10", "FREESHIP"]</code> before and after. Only <code>discountApplications</code> knows about "Hoodie Season", and only through <code>__typename</code> and <code>title</code>. This is the second lie: codes are what the customer typed, not what was discounted.</li>
+    <li><b>SAVE10 shrank from 14.50 to 13.50.</b> It applied to 110.00 + 25.00, not 145.00. Whether two discounts stack at all depends on the merchant's combination settings; a customer can enter up to 5 product or order codes and 1 shipping code.<sup><a href="#r5">5</a></sup></li>
   </ol>
   <p>Hoodie line value: 120.00 − 21.00 = 99.00. Cap: 22.50. Subtotal 121.50. Tax 11.88 + 2.70 = 14.58. Total 121.50 + 0.00 + 14.58 = 136.08.</p>
 
   <h2>Which field for which question</h2>
   <table class="ref">
     <tr><th>you want to know</th><th>read</th><th>not</th></tr>
-    <tr><td>the merchandise value after every discount</td><td>sum of line values, or <code>subtotal_price</code></td><td><code>total_line_items_price − total_discounts</code></td></tr>
-    <tr><td>how much a specific promotion gave away</td><td><code>discount_allocations</code> filtered by that application's index</td><td><code>discount_codes[].amount</code></td></tr>
-    <tr><td>whether a Smile reward code was used</td><td><code>discount_codes[].code</code></td><td><code>discount_applications</code>, which has no code for automatic ones</td></tr>
-    <tr><td>the shipping the customer actually paid</td><td><code>shipping_lines[].discounted_price</code></td><td><code>shipping_lines[].price</code></td></tr>
+    <tr><td>the merchandise value after every discount</td><td>sum of line values, or <code>subtotalPriceSet</code></td><td><code>discountedTotalSet</code>, which skips order-level discounts</td></tr>
+    <tr><td>how much one promotion gave away</td><td>allocations whose <code>discountApplication.index</code> matches</td><td><code>value</code> on the application, which is the rule, not the result</td></tr>
+    <tr><td>whether a Smile reward code was used</td><td><code>discountCodes</code>, or <code>code</code> on a <code>DiscountCodeApplication</code></td><td>automatic applications, which have a <code>title</code> and no code</td></tr>
+    <tr><td>product discounts only, without shipping</td><td>allocations on line items, or applications with <code>targetType: LINE_ITEM</code></td><td><code>totalDiscountsSet</code></td></tr>
+    <tr><td>the shipping the customer actually paid</td><td><code>shippingLines.discountedPriceSet</code></td><td><code>shippingLines.originalPriceSet</code></td></tr>
   </table>
 
   <div class="safety">
     <div class="t">⚠ What this means for cashback</div>
-    A per-line base reads <code>price × quantity − total_discount</code> and never touches <code>total_discounts</code>, so both lies are avoided for free. If you ever need the order-wide number, compute it as the sum of line <code>total_discount</code>, not from the header.
+    A per-line base reads <code>originalTotalSet</code> minus the line's allocations and never touches <code>totalDiscountsSet</code>, so both lies are avoided for free. If a Smile reward code should be excluded from the base or counted separately, match its allocations by index; the allocation carries the amount, the application carries the code.
   </div>
 
   <!-- ================= QUIZ ================= -->
-  <div class="quiz" id="quiz" data-course="shopify-orders" data-lesson="0002" data-title="Lesson 02 — One discount, three places">
+  <div class="quiz" id="quiz" data-course="shopify-orders" data-lesson="0002" data-title="Lesson 02 — One discount, two places">
     <h3>Practice now — recall from memory</h3>
     <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Tap an answer. Work the numbers in your head first.</p>
 
-    <div class="q" data-correct="2" data-note="Automatic discounts appear in discount_applications and in the line allocations, never in discount_codes.">
-      <p>1. <code>discount_codes</code> sums to 25.50 but <code>total_discounts</code> is 35.50. The gap is:</p>
-      <button class="opt">A rounding error in Shopify</button>
+    <div class="q" data-correct="2" data-note="Automatic discounts appear in discountApplications and in the line allocations, never in discountCodes.">
+      <p>1. <code>discountCodes</code> lists two codes but <code>discountApplications</code> has three nodes. The extra one is:</p>
+      <button class="opt">A rounding entry from Shopify</button>
       <button class="opt">The shipping code, listed twice</button>
-      <button class="opt">An automatic discount, never listed</button>
+      <button class="opt">An automatic discount, never coded</button>
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="0" data-note="Shipping discounts live on the total side. Only product discounts move the subtotal.">
-      <p>2. A free shipping code is added. <code>subtotal_price</code>:</p>
+    <div class="q" data-correct="0" data-note="Shipping discounts live on the total side. Only line item discounts move the subtotal.">
+      <p>2. A free shipping code is added. <code>subtotalPriceSet</code>:</p>
       <button class="opt">Stays exactly where it was</button>
       <button class="opt">Drops by the shipping price</button>
       <button class="opt">Drops by the shipping tax</button>
@@ -157,28 +181,28 @@
       <div class="fb"></div>
     </div>
 
-    <div class="q" data-correct="2" data-note="Each allocation carries the index of its application. Filter allocations by index, then sum.">
+    <div class="q" data-correct="2" data-note="Each allocation carries discountApplication.index. Filter allocations by that index, then sum allocatedAmountSet.">
       <p>4. You need the total given away by "Hoodie Season" alone. You read:</p>
-      <button class="opt">The matching discount_codes amount field</button>
-      <button class="opt">The total_discounts field on header</button>
-      <button class="opt">The allocations with its index</button>
+      <button class="opt">The value on its application</button>
+      <button class="opt">The totalDiscountsSet on the order</button>
+      <button class="opt">The allocations carrying its index</button>
       <div class="fb"></div>
     </div>
   </div>
 
   <h2>Your task before Lesson 03</h2>
-  <p class="next">On a dev store, create an automatic discount and a percentage code, place one order with both, and open the <code>orders/updated</code> payload. Find the automatic discount in <code>discount_applications</code>, confirm it is absent from <code>discount_codes</code>, and reconcile <code>total_discounts</code> from the line allocations. Send me the three numbers.</p>
+  <p class="next">On a dev store, create an automatic discount and a percentage code, place one order with both, and run the Lesson 01 query plus the additions above. Find the automatic discount in <code>discountApplications</code>, confirm <code>discountCodes</code> ignores it, and reconcile <code>totalDiscountsSet</code> from the allocations on lines and shipping lines. Send me the three numbers.</p>
 
   <div class="primary">
     <div class="t">📌 Primary source</div>
-    <p style="margin:.4rem 0 0">Read Shopify Help, <a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Combining discounts</a> (~8 min). It is written for merchants, which is exactly why it states the application order plainly. Then skim the <a href="https://shopify.dev/docs/api/admin-graphql/latest/interfaces/DiscountApplication" target="_blank">DiscountApplication interface</a> for the enum values behind <code>allocation_method</code> and <code>target_selection</code>.</p>
+    <p style="margin:.4rem 0 0">Read Shopify Help, <a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Combining discounts</a> (~8 min). It is written for merchants, which is exactly why it states the application order plainly. Then the <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAllocation" target="_blank">DiscountAllocation object</a> and the <a href="https://shopify.dev/docs/api/admin-graphql/latest/enums/DiscountApplicationTargetSelection" target="_blank">targetSelection enum</a>, two short pages that together justify the per-line formula.</p>
   </div>
 
   <div class="ask">
-    👩‍🏫 <b>I am your teacher.</b> If a real payload's allocations do not sum to its <code>total_discounts</code>, send it over. There is usually a shipping discount or a removed line hiding in it, and finding which one is the best practice you can get.
+    👩‍🏫 <b>I am your teacher.</b> If a real response's allocations do not sum to its <code>totalDiscountsSet</code>, send it over. There is usually a shipping allocation or a removed line hiding in it, and finding which one is the best practice you can get.
   </div>
 
-  <p class="next"><b>Next, Lesson 03:</b> a gift card bought and a gift card used to pay. The first sits inside <code>subtotal_price</code>; the second is invisible in every total and only shows up in the transactions.</p>
+  <p class="next"><b>Next, Lesson 03:</b> a gift card bought and a gift card used to pay. The first sits inside <code>subtotalPriceSet</code> with <code>isGiftCard: true</code>; the second is invisible in every total and only shows up in <code>transactions</code>.</p>
 
   <div class="footer-nav">
     <a href="0001-the-totals-chain.html">← Lesson 01</a>
@@ -190,10 +214,11 @@
   <div class="refs" id="refs">
     <hr style="border:none;border-top:1px solid var(--rule)">
     <ol>
-      <li id="r1"><a href="https://shopify.dev/docs/api/admin-rest/latest/resources/order" target="_blank">Shopify — Order (REST Admin API)</a>. <code>discount_allocations</code>: "an ordered list of amounts allocated by discount applications". <code>discount_applications</code> properties: type, allocation_method, target_type, target_selection, value_type. <code>discount_codes</code>: code, amount, type.</li>
-      <li id="r2"><a href="https://shopify.dev/docs/api/admin-graphql/latest/interfaces/DiscountApplication" target="_blank">Shopify — DiscountApplication (GraphQL Admin API)</a>. <code>index</code>: "an ordered index that can be used to identify the discount application and indicate the precedence of the discount application for calculations". Enums: allocationMethod ACROSS, EACH, ONE; targetSelection ALL, ENTITLED, EXPLICIT; targetType LINE_ITEM, SHIPPING_LINE.</li>
-      <li id="r3"><a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Shopify Help — Combining discounts</a>. "Product discounts apply first to individual items. Order discounts apply to the revised subtotal after product discounts. Shipping discounts apply last." "Customers can use a maximum of 5 product or order discount codes and 1 shipping discount code on the same order."</li>
-      <li id="r4">smile-core, <code>app/operations/channel/shopify/shopify_order/normalize.rb</code>: <code>shipping_discount</code> sums <code>discount_codes</code> with <code>type == "shipping"</code>; <code>total_discounts</code> subtracts it before use.</li>
+      <li id="r1"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAllocation" target="_blank">Shopify — DiscountAllocation (GraphQL Admin API)</a>. "While DiscountApplication captures the discount's intentions and rules, The DiscountAllocation object shows the final calculated discount amount applied to each line." <code>allocatedAmountSet</code>, <code>discountApplication</code>.</li>
+      <li id="r2"><a href="https://shopify.dev/docs/api/admin-graphql/latest/interfaces/DiscountApplication" target="_blank">Shopify — DiscountApplication interface</a>, with <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountCodeApplication" target="_blank">DiscountCodeApplication</a> (<code>code</code>) and <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/AutomaticDiscountApplication" target="_blank">AutomaticDiscountApplication</a> (<code>title</code>). <code>index</code>: "an ordered index that can be used to identify the discount application and indicate the precedence of the discount application for calculations". <code>targetType</code>: LINE_ITEM or SHIPPING_LINE.</li>
+      <li id="r3"><a href="https://shopify.dev/docs/api/admin-graphql/latest/enums/DiscountApplicationTargetSelection" target="_blank">DiscountApplicationTargetSelection</a>: ALL "the discount is allocated onto all the lines"; ENTITLED "onto only the lines that it's entitled for". <a href="https://shopify.dev/docs/api/admin-graphql/latest/enums/DiscountApplicationAllocationMethod" target="_blank">DiscountApplicationAllocationMethod</a>: ACROSS "the value is spread across all entitled lines"; EACH "the value is applied onto every entitled line".</li>
+      <li id="r4"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/Order" target="_blank">Shopify — Order</a>. <code>discountCodes</code>: "the discount codes used for the order"; <code>discountApplications</code>: "a list of discounts that are applied to the order, excluding order edits and refunds"; <code>totalDiscountsSet</code>: "the total amount discounted on the order before returns".</li>
+      <li id="r5"><a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Shopify Help — Combining discounts</a>. "Product discounts apply first to individual items. Order discounts apply to the revised subtotal after product discounts. Shipping discounts apply last." "Customers can use a maximum of 5 product or order discount codes and 1 shipping discount code on the same order."</li>
     </ol>
   </div>
 

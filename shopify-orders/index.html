@@ -38,7 +38,7 @@
   <header>
     <div class="kick">Course</div>
     <h1>🧾 Shopify Orders</h1>
-    <p class="tag">Every money field on an order, in one example that grows — so you can design the cashback normalizer</p>
+    <p class="tag">Every money field on a GraphQL <code>Order</code>, in one example that grows — so you can design the cashback normalizer</p>
   </header>
 
   <div class="section-h">Lessons</div>
@@ -46,32 +46,32 @@
   <a class="card" href="lessons/0001-the-totals-chain.html">
     <div class="num">LESSON 01</div>
     <div class="t">The totals chain</div>
-    <p class="d">From one 60.00 hoodie to the first discount code: line items, subtotal, tax, shipping and total. With quiz.</p>
+    <p class="d">One query, one 60.00 hoodie, then tax, shipping and the first code. Why <code>discountedTotalSet</code> is not your line value. With quiz.</p>
     <span class="go">Start →</span>
   </a>
 
   <a class="card" href="lessons/0002-one-discount-three-places.html">
     <div class="num">LESSON 02</div>
-    <div class="t">One discount, three places</div>
-    <p class="d">Codes, applications and allocations. Why <code>discount_codes</code> does not add up to <code>total_discounts</code>. With quiz.</p>
+    <div class="t">One discount, two places</div>
+    <p class="d">Applications say what was meant, allocations say what happened. Why <code>discountCodes</code> never mentions automatic discounts. With quiz.</p>
     <span class="go">Start →</span>
   </a>
 
   <a class="card soon" href="#">
     <div class="num">LESSON 03 · coming next</div>
     <div class="t">Gift card: product or payment?</div>
-    <p class="d">A gift card bought lives in the subtotal. A gift card used to pay only shows up in the transactions.</p>
+    <p class="d">A gift card bought lives in the subtotal with <code>isGiftCard</code>. A gift card used to pay only shows up in <code>transactions</code>.</p>
   </a>
 
   <a class="card soon" href="#">
     <div class="num">LESSON 04 · planned</div>
     <div class="t">Tax on top, tax inside</div>
-    <p class="d">The same <code>price</code> with two meanings. What <code>taxes_included</code> changes in the arithmetic.</p>
+    <p class="d">The same <code>originalUnitPriceSet</code> with two meanings. What <code>taxesIncluded</code> changes in the arithmetic.</p>
   </a>
 
   <a class="card soon" href="#">
     <div class="num">LESSON 05 · planned</div>
-    <div class="t">Refunds and the current_* fields</div>
+    <div class="t">Refunds and the current*Set fields</div>
     <p class="d">Returned lines, adjustments with no line, and why the original totals never move.</p>
   </a>
 
@@ -85,7 +85,7 @@
   <a class="card ref" href="reference/the-totals-chain.html">
     <div class="num">CARD</div>
     <div class="t">🗂 The totals chain</div>
-    <p class="d">Formulas in plain words, what each field contains, and the example order's numbers. Prints well.</p>
+    <p class="d">The full query, formulas in plain words, what each field contains, and the example order's numbers. Prints well.</p>
     <span class="go">Open →</span>
   </a>
 

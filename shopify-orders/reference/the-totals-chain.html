@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reference card — The totals chain of a Shopify order</title>
+<title>Reference card — The totals chain of a Shopify order (GraphQL)</title>
 <link rel="stylesheet" href="../../assets/lesson.css">
 <style>
   .chain{font-family:var(--mono);font-size:.78rem;line-height:1.5;background:#f3efe2;border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;white-space:pre}
@@ -15,72 +15,129 @@
 <body>
 <div class="wrap">
 
-  <p class="kicker">Shopify Orders · Reference card</p>
+  <p class="kicker">Shopify Orders · Reference card · GraphQL Admin API</p>
   <h1>The totals chain</h1>
-  <p class="sub">Everything an order says about money is either a link in this chain or the breakdown of one link.</p>
+  <p class="sub">Everything an <code>Order</code> says about money is either a link in this chain or the breakdown of one link.</p>
 
 <div class="chain">line items ──minus discounts──▶ subtotal ──plus shipping, tax, tip──▶ total
      │                                │                                     │
-     │ price × quantity               │ never contains tax,                 │ what the card
-     │ per line                       │ shipping or tips                    │ was charged</div>
+     │ originalTotalSet               │ subtotalPriceSet: never             │ totalPriceSet:
+     │ per line                       │ contains shipping or tips           │ what was charged</div>
 
   <h2>The formulas, in plain words</h2>
-<pre><code>line value             = price × quantity − total_discount
+<pre><code>line value          = originalTotalSet − sum of discountAllocations.allocatedAmountSet
 
-total_line_items_price = sum of (price × quantity) over all lines
+lines before disc.  = sum of originalTotalSet over all lines   (no order field for this)
 
-subtotal_price         = sum of line value over all lines
-                       = total_line_items_price − sum of total_discount
+subtotalPriceSet    = sum of line value over all lines
 
-shipping               = sum of discounted_price over all shipping lines
+shipping            = sum of discountedPriceSet over all shipping lines
 
-total_discounts        = sum of total_discount over all lines
-                         + sum of shipping discounts
+totalDiscountsSet   = sum of allocations on all lines
+                      + sum of allocations on all shipping lines
 
-total_tax              = sum of tax_lines.price over all lines
-                         + sum of tax_lines.price over all shipping lines
+totalTaxSet         = sum of taxLines.priceSet over all lines
+                      + sum of taxLines.priceSet over all shipping lines
 
-total_price            = subtotal_price + shipping + total_tax + total_tip_received
-                         (leave total_tax out when taxes_included is true)
+totalPriceSet       = subtotalPriceSet + shipping + totalTaxSet + totalTipReceivedSet
+                      (leave totalTaxSet out when taxesIncluded is true)
 
-current_total_price    = total_price − refunds + order edits</code></pre>
+currentTotalPriceSet = totalPriceSet − refunds + order edits</code></pre>
 
   <div class="safety">
-    <div class="t">⚠ Two traps</div>
-    <b>1.</b> <code>total_discounts</code> includes shipping discounts, but shipping already enters through <code>discounted_price</code>. Subtracting <code>total_discounts</code> from anything that contains shipping counts the discount twice.<br>
-    <b>2.</b> <code>subtotal_price</code> never contains tax, shipping or tips. That is why it is the natural cashback base.
+    <div class="t">⚠ Three traps</div>
+    <b>1.</b> <code>totalDiscountsSet</code> includes shipping discounts, but shipping already enters through <code>discountedPriceSet</code>. Subtracting <code>totalDiscountsSet</code> from anything that contains shipping counts the discount twice.<br>
+    <b>2.</b> <code>lineItem.discountedTotalSet</code> and <code>lineItem.totalDiscountSet</code> leave out order-level and code discounts. Use the allocations.<br>
+    <b>3.</b> <code>subtotalPriceSet</code> never contains shipping or tips, and contains tax only when <code>taxesIncluded</code> is true. That is why the line value is the natural cashback base.
   </div>
+
+  <h2>The query</h2>
+<pre><code>query OrderMoney($id: ID!) {
+  order(id: $id) {
+    name currencyCode presentmentCurrencyCode taxesIncluded
+    displayFinancialStatus sourceName processedAt
+    subtotalPriceSet      { shopMoney { amount } }
+    totalDiscountsSet     { shopMoney { amount } }
+    totalShippingPriceSet { shopMoney { amount } }
+    totalTaxSet           { shopMoney { amount } }
+    totalTipReceivedSet   { shopMoney { amount } }
+    totalPriceSet         { shopMoney { amount } }
+    currentSubtotalPriceSet  { shopMoney { amount } }
+    currentTotalDiscountsSet { shopMoney { amount } }
+    currentTotalTaxSet       { shopMoney { amount } }
+    currentTotalPriceSet     { shopMoney { amount } }
+    discountCodes
+    discountApplications(first: 10) { nodes {
+      __typename index allocationMethod targetSelection targetType
+      value { ... on MoneyV2 { amount } ... on PricingPercentageValue { percentage } }
+      ... on DiscountCodeApplication { code }
+      ... on AutomaticDiscountApplication { title }
+    } }
+    lineItems(first: 50) { nodes {
+      id title quantity currentQuantity isGiftCard taxable requiresShipping
+      product { id }
+      originalUnitPriceSet { shopMoney { amount } }
+      originalTotalSet     { shopMoney { amount } }
+      discountAllocations { allocatedAmountSet { shopMoney { amount } } discountApplication { index } }
+      taxLines { title ratePercentage priceSet { shopMoney { amount } } }
+    } }
+    shippingLines(first: 5) { nodes {
+      title
+      originalPriceSet   { shopMoney { amount } }
+      discountedPriceSet { shopMoney { amount } }
+      discountAllocations { allocatedAmountSet { shopMoney { amount } } discountApplication { index } }
+      taxLines { ratePercentage priceSet { shopMoney { amount } } }
+    } }
+    transactions { kind gateway status amountSet { shopMoney { amount } } }
+    refunds {
+      createdAt note
+      totalRefundedSet { shopMoney { amount } }
+      refundLineItems(first: 50) { nodes {
+        quantity restockType
+        subtotalSet { shopMoney { amount } } totalTaxSet { shopMoney { amount } }
+        lineItem { id }
+      } }
+      orderAdjustments(first: 10) { nodes { reason amountSet { shopMoney { amount } } } }
+      transactions(first: 10) { nodes { kind gateway amountSet { shopMoney { amount } } } }
+    }
+  }
+}</code></pre>
 
   <h2>What each field contains</h2>
   <table class="ref">
     <tr><th>field</th><th>contains</th><th>does not contain</th></tr>
-    <tr><td>line_items[].price</td><td>original unit price</td><td>discount, quantity</td></tr>
-    <tr><td>line_items[].total_discount</td><td>sum of the line's allocations</td><td>shipping discounts</td></tr>
-    <tr><td>total_line_items_price</td><td>price × quantity, all lines</td><td>discount, tax</td></tr>
-    <tr><td>total_discounts</td><td>product + shipping discounts</td><td>—</td></tr>
-    <tr><td>subtotal_price</td><td>lines after discounts</td><td>shipping, tax, tip</td></tr>
-    <tr><td>shipping_lines[].discounted_price</td><td>shipping after shipping discounts</td><td>shipping tax</td></tr>
-    <tr><td>total_tax</td><td>line tax + shipping tax</td><td>—</td></tr>
-    <tr><td>total_tip_received</td><td>tip</td><td>—</td></tr>
-    <tr><td>total_price</td><td>subtotal + shipping + tax + tip</td><td>later refunds</td></tr>
-    <tr><td>current_*</td><td>the order today, after refunds and edits</td><td>—</td></tr>
-    <tr><td>*_set.shop_money</td><td>shop currency (same as the plain string)</td><td>—</td></tr>
-    <tr><td>*_set.presentment_money</td><td>the currency the buyer saw</td><td>—</td></tr>
+    <tr><td>lineItem.originalUnitPriceSet</td><td>original unit price</td><td>discount, quantity</td></tr>
+    <tr><td>lineItem.originalTotalSet</td><td>unit price × quantity</td><td>any discount</td></tr>
+    <tr><td>lineItem.discountAllocations</td><td>every discount that landed on the line, by application index</td><td>shipping discounts</td></tr>
+    <tr><td>lineItem.discountedTotalSet</td><td>line after line-level discounts</td><td>order-level and code discounts</td></tr>
+    <tr><td>lineItem.taxLines[].priceSet</td><td>tax "after discounts and before returns"</td><td>—</td></tr>
+    <tr><td>lineItem.quantity / currentQuantity</td><td>units ordered / units still on the order</td><td>—</td></tr>
+    <tr><td>totalDiscountsSet</td><td>product + shipping discounts, before returns</td><td>—</td></tr>
+    <tr><td>subtotalPriceSet</td><td>lines after discounts, before returns</td><td>shipping, tip; tax unless taxesIncluded</td></tr>
+    <tr><td>shippingLine.discountedPriceSet</td><td>shipping after shipping discounts</td><td>shipping tax (unless taxesIncluded)</td></tr>
+    <tr><td>totalShippingPriceSet</td><td>shipping after discounts</td><td>—</td></tr>
+    <tr><td>totalTaxSet</td><td>line tax + shipping tax</td><td>—</td></tr>
+    <tr><td>totalTipReceivedSet</td><td>tip</td><td>—</td></tr>
+    <tr><td>totalPriceSet</td><td>subtotal + shipping + tax + tip, before returns</td><td>later refunds</td></tr>
+    <tr><td>current*Set</td><td>the same figures "after returns and refunds"</td><td>—</td></tr>
+    <tr><td>totalReceivedSet / totalRefundedSet / netPaymentSet</td><td>money in, money out, the difference</td><td>—</td></tr>
+    <tr><td>*Set.shopMoney</td><td>shop currency</td><td>—</td></tr>
+    <tr><td>*Set.presentmentMoney</td><td>the currency the buyer saw</td><td>—</td></tr>
   </table>
 
-  <h2>One discount, three places</h2>
+  <h2>One discount, two places</h2>
   <table class="ref">
-    <tr><th>field</th><th>what it is</th><th>lists automatic discounts?</th></tr>
-    <tr><td>discount_codes</td><td>legacy list: code, amount, type (percentage, fixed_amount, shipping)</td><td>no</td></tr>
-    <tr><td>discount_applications</td><td>the rule, in the order it was applied: type, value, target_type, allocation_method</td><td>yes</td></tr>
-    <tr><td>line_items[].discount_allocations</td><td>how much of each application landed on this line, by index</td><td>yes</td></tr>
+    <tr><th>field</th><th>what it is</th><th>knows automatic discounts?</th></tr>
+    <tr><td>discountCodes</td><td>list of code strings the customer typed; no amounts, no types</td><td>no</td></tr>
+    <tr><td>discountApplications</td><td>the rule, in precedence order: __typename, index, value, targetType, targetSelection, allocationMethod</td><td>yes, as AutomaticDiscountApplication with a title</td></tr>
+    <tr><td>discountAllocations</td><td>the amount of each application that landed on this line or shipping line</td><td>yes</td></tr>
   </table>
-  <p class="side">Order of application, per Shopify: product discounts first, order discounts on the already reduced subtotal, shipping discounts last.<sup><a href="#r3">3</a></sup> Indexes shift when a new discount enters; never cache them across webhooks.</p>
+  <p class="side">Application order, per Shopify: product discounts first, order discounts on the already reduced subtotal, shipping discounts last.<sup><a href="#r4">4</a></sup> <code>targetSelection: ALL</code> means "allocated onto all the lines", so an order-wide code still shows up line by line.<sup><a href="#r3">3</a></sup> Indexes shift when a new discount enters; match within one response and never store them.</p>
 
   <h2>The example order</h2>
   <p class="side">Shop in British Columbia, 12% tax added on top, CAD. Hoodie 60.00 ×2, Cap 25.00, Gift Card 50.00. Automatic "Hoodie Season" 5.00 per hoodie, code SAVE10 (10%), code FREESHIP. Tip 5.00. Payment: 40.00 on a gift card + 146.08 on the card.</p>
   <table class="ref">
-    <tr><th>step</th><th class="n">line items</th><th class="n">discounts</th><th class="n">subtotal</th><th class="n">shipping</th><th class="n">tax</th><th class="n">total</th></tr>
+    <tr><th>step</th><th class="n">sum originalTotal</th><th class="n">totalDiscounts</th><th class="n">subtotalPrice</th><th class="n">shipping</th><th class="n">totalTax</th><th class="n">totalPrice</th></tr>
     <tr><td>1 hoodie</td><td class="n">60.00</td><td class="n">0.00</td><td class="n">60.00</td><td class="n">0.00</td><td class="n">0.00</td><td class="n">60.00</td></tr>
     <tr><td>2 qty 2</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">0.00</td><td class="n">120.00</td></tr>
     <tr><td>3 tax</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">14.40</td><td class="n">134.40</td></tr>
@@ -92,21 +149,13 @@ current_total_price    = total_price − refunds + order edits</code></pre>
     <tr><td>9 gift card (line)</td><td class="n">195.00</td><td class="n">35.50</td><td class="n">171.50</td><td class="n">0.00</td><td class="n">14.58</td><td class="n">186.08</td></tr>
     <tr><td>10 gift card (payment)</td><td class="n">195.00</td><td class="n">35.50</td><td class="n">171.50</td><td class="n">0.00</td><td class="n">14.58</td><td class="n">186.08</td></tr>
     <tr><td>11 tip 5.00</td><td class="n">195.00</td><td class="n">35.50</td><td class="n">171.50</td><td class="n">0.00</td><td class="n">14.58</td><td class="n">191.08</td></tr>
-    <tr><td>13 refund, current</td><td class="n">195.00</td><td class="n">25.00</td><td class="n">122.00</td><td class="n">0.00</td><td class="n">8.64</td><td class="n">135.64</td></tr>
-    <tr><td>14 goodwill, current</td><td class="n">195.00</td><td class="n">25.00</td><td class="n">122.00</td><td class="n">0.00</td><td class="n">8.64</td><td class="n">132.64</td></tr>
+    <tr><td>13 refund, current*</td><td class="n">195.00</td><td class="n">25.00</td><td class="n">122.00</td><td class="n">0.00</td><td class="n">8.64</td><td class="n">135.64</td></tr>
+    <tr><td>14 goodwill, current*</td><td class="n">195.00</td><td class="n">25.00</td><td class="n">122.00</td><td class="n">0.00</td><td class="n">8.64</td><td class="n">132.64</td></tr>
   </table>
-  <p class="side">Step 10 proves that payment moves no total at all. Steps 13 and 14 are the only rows where <code>current_*</code> differs from the originals.</p>
+  <p class="side">Step 10 proves that payment moves no total at all. Steps 13 and 14 are the only rows where <code>current*Set</code> differs from the originals.</p>
 
-  <h2>What smile-core makes of the final order</h2>
-  <table class="ref">
-    <tr><th>normalizer step (default settings)</th><th class="n">amount</th></tr>
-    <tr><td>total_line_items_price</td><td class="n">195.00</td></tr>
-    <tr><td>minus the gift card line</td><td class="n">145.00</td></tr>
-    <tr><td>minus non-shipping discounts (35.50 − 12.00)</td><td class="n">121.50</td></tr>
-    <tr><td>minus refunds (49.50 + 3.00)</td><td class="n">69.00</td></tr>
-    <tr><td><b>rewardable_total</b></td><td class="n"><b>69.00</b></td></tr>
-  </table>
-  <p class="side"><code>grand_total</code> = <code>total_price</code> = 191.08. <code>refunded_amount</code> = 52.50. Source: <code>app/operations/channel/shopify/shopify_order/normalize.rb</code>.</p>
+  <h2>Where smile-core stands today</h2>
+  <p class="side">The current normalizer fetches the order over REST (<code>ShopifyAPI::Order.find</code>) and computes <code>rewardable_total</code> as line items before discounts, minus excluded lines, minus non-shipping discounts, minus refunds: 195.00 → 145.00 → 121.50 → <b>69.00</b> on the final order. The cashback normalizer will query GraphQL and use the per-line value instead. Source: <code>app/operations/channel/shopify/shopify_order/{fetch,normalize}.rb</code>.</p>
 
   <div class="footer-nav">
     <a href="../lessons/0001-the-totals-chain.html">Lesson 01</a>
@@ -118,10 +167,11 @@ current_total_price    = total_price − refunds + order edits</code></pre>
   <div class="refs" id="refs">
     <hr style="border:none;border-top:1px solid var(--rule)">
     <ol>
-      <li id="r1"><a href="https://shopify.dev/docs/api/admin-rest/latest/resources/order" target="_blank">Shopify — Order (REST Admin API)</a>. Descriptions of <code>total_line_items_price</code>, <code>subtotal_price</code>, <code>total_discounts</code>, <code>line_items.total_discount</code>, <code>discount_allocations</code>, <code>discount_applications</code>.</li>
-      <li id="r2"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/Order" target="_blank">Shopify — Order (GraphQL Admin API)</a>. <code>subtotalPriceSet</code> "after discounts and before returns"; <code>current*Set</code> "after returns and refunds".</li>
-      <li id="r3"><a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Shopify Help — Combining discounts</a>. "Product discounts apply first… Order discounts apply to the revised subtotal after product discounts. Shipping discounts apply last."</li>
-      <li id="r4"><a href="https://shopify.dev/docs/api/admin-rest/latest/resources/refund" target="_blank">Shopify — Refund (REST Admin API)</a>. <code>refund_line_items</code>, <code>order_adjustments</code> (<code>shipping_refund</code>, <code>refund_discrepancy</code>).</li>
+      <li id="r1"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/Order" target="_blank">Shopify — Order (GraphQL Admin API)</a>. <code>subtotalPriceSet</code>, <code>totalPriceSet</code>, <code>totalDiscountsSet</code>, <code>current*Set</code>, <code>totalReceivedSet</code>, <code>totalRefundedSet</code>, <code>netPaymentSet</code>, <code>discountApplications</code>, <code>discountCodes</code>.</li>
+      <li id="r2"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/LineItem" target="_blank">Shopify — LineItem</a>. <code>originalTotalSet</code>, <code>discountedTotalSet</code>, <code>totalDiscountSet</code>, <code>discountAllocations</code>, <code>quantity</code>, <code>currentQuantity</code>, <code>isGiftCard</code>. <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAllocation" target="_blank">DiscountAllocation</a>: "the final calculated discount amount applied to each line".</li>
+      <li id="r3"><a href="https://shopify.dev/docs/api/admin-graphql/latest/enums/DiscountApplicationTargetSelection" target="_blank">DiscountApplicationTargetSelection</a> and <a href="https://shopify.dev/docs/api/admin-graphql/latest/enums/DiscountApplicationAllocationMethod" target="_blank">DiscountApplicationAllocationMethod</a>.</li>
+      <li id="r4"><a href="https://help.shopify.com/en/manual/discounts/discount-combinations" target="_blank">Shopify Help — Combining discounts</a>. Application order and the 5 + 1 code limit.</li>
+      <li id="r5"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/ShippingLine" target="_blank">ShippingLine</a>, <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/TaxLine" target="_blank">TaxLine</a>, <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/Refund" target="_blank">Refund</a>, <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/RefundLineItem" target="_blank">RefundLineItem</a>, <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAdjustment" target="_blank">OrderAdjustment</a>, <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction" target="_blank">OrderTransaction</a>.</li>
     </ol>
   </div>
 
