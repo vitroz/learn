@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify Orders — Course</title>
+<meta name="theme-color" content="#0f766e">
+<style>
+  :root{--ink:#1a1a17;--paper:#fdfcf8;--rule:#d9d4c5;--accent:#0f766e;--soft:#6b6657;--card:#fff;--water:#0f766e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:34rem;margin:0 auto;padding:2.2rem 1.15rem 4rem}
+  a.back{font-size:.85rem;color:var(--soft);text-decoration:none}
+  header{text-align:center;margin:.8rem 0 1.6rem}
+  .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:800}
+  h1{font-family:Georgia,serif;font-size:1.8rem;line-height:1.15;margin:.3rem 0}
+  .tag{color:var(--soft);font-size:.95rem;margin:0}
+  .section-h{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:2rem .2rem .7rem}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--rule);
+    border-radius:14px;padding:1.05rem 1.15rem;margin-bottom:.8rem;transition:transform .08s,box-shadow .12s;-webkit-tap-highlight-color:transparent}
+  a.card:active{transform:scale(.985)}
+  a.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);border-color:var(--soft)}
+  .card .num{font-family:Georgia,serif;font-size:.8rem;color:var(--accent);font-weight:700;letter-spacing:.05em}
+  .card .t{font-family:Georgia,serif;font-size:1.18rem;font-weight:700;margin:.15rem 0 .2rem;line-height:1.2}
+  .card .d{font-size:.9rem;color:var(--soft);margin:0}
+  .card .go{display:inline-block;margin-top:.6rem;font-size:.82rem;font-weight:700;color:var(--accent)}
+  a.card.ref{background:#f0fdfa;border-color:#cdece6}
+  a.card.ref .num,a.card.ref .go{color:var(--water)}
+  a.card.soon{opacity:.55;pointer-events:none}
+  .tip{font-size:.82rem;color:var(--soft);background:#f3efe2;border-radius:12px;padding:.9rem 1.05rem;margin-top:1.6rem}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:.88em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← My courses</a>
+  <header>
+    <div class="kick">Course</div>
+    <h1>🧾 Shopify Orders</h1>
+    <p class="tag">Every money field on an order, in one example that grows — so you can design the cashback normalizer</p>
+  </header>
+
+  <div class="section-h">Lessons</div>
+
+  <a class="card" href="lessons/0001-the-totals-chain.html">
+    <div class="num">LESSON 01</div>
+    <div class="t">The totals chain</div>
+    <p class="d">From one 60.00 hoodie to the first discount code: line items, subtotal, tax, shipping and total. With quiz.</p>
+    <span class="go">Start →</span>
+  </a>
+
+  <a class="card" href="lessons/0002-one-discount-three-places.html">
+    <div class="num">LESSON 02</div>
+    <div class="t">One discount, three places</div>
+    <p class="d">Codes, applications and allocations. Why <code>discount_codes</code> does not add up to <code>total_discounts</code>. With quiz.</p>
+    <span class="go">Start →</span>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="num">LESSON 03 · coming next</div>
+    <div class="t">Gift card: product or payment?</div>
+    <p class="d">A gift card bought lives in the subtotal. A gift card used to pay only shows up in the transactions.</p>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="num">LESSON 04 · planned</div>
+    <div class="t">Tax on top, tax inside</div>
+    <p class="d">The same <code>price</code> with two meanings. What <code>taxes_included</code> changes in the arithmetic.</p>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="num">LESSON 05 · planned</div>
+    <div class="t">Refunds and the current_* fields</div>
+    <p class="d">Returned lines, adjustments with no line, and why the original totals never move.</p>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="num">LESSON 06 · planned</div>
+    <div class="t">Capstone: the cashback normalizer spec</div>
+    <p class="d">Per-line base, exclusions, refunds, rounding — and where to diverge from <code>rewardable_total</code> on purpose.</p>
+  </a>
+
+  <div class="section-h">Reference</div>
+  <a class="card ref" href="reference/the-totals-chain.html">
+    <div class="num">CARD</div>
+    <div class="t">🗂 The totals chain</div>
+    <p class="d">Formulas in plain words, what each field contains, and the example order's numbers. Prints well.</p>
+    <span class="go">Open →</span>
+  </a>
+
+  <div class="section-h">Progress</div>
+  <a class="card ref" href="../progresso/">
+    <div class="num">PROGRESS</div>
+    <div class="t">📊 My progress</div>
+    <p class="d">Your quiz results, saved on this device — and the button to send them to your teacher.</p>
+    <span class="go">Open →</span>
+  </a>
+
+  <div class="tip">📱 <b>Tip:</b> add the hub to your phone's home screen to study like an app.</div>
+</div>
+</body>
+</html>

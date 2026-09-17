@@ -72,7 +72,8 @@
   function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},2200); }
 
   var COURSE_NAMES = { eletricidade:"Eletricidade Doméstica", arquitetura:"Arquitetura de Software",
-    "claude-code":"Claude Code", cozinha:"Cozinha", ddd:"Domain-Driven Design" };
+    "claude-code":"Claude Code", cozinha:"Cozinha", ddd:"Domain-Driven Design",
+    "shopify-orders":"Shopify Orders" };
   function courseName(slug){ return COURSE_NAMES[slug] || (slug.charAt(0).toUpperCase()+slug.slice(1)); }
   function courseOf(d, id){ return (d.lessons[id] && d.lessons[id].course) || id.split("/")[0]; }
 

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 01 — The totals chain</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  .chain{font-family:var(--mono);font-size:.78rem;line-height:1.5;background:#f3efe2;border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;white-space:pre}
+  table.ref td.n,table.ref th.n{text-align:right;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Shopify Orders · Lesson 01 · Foundations</p>
+  <h1>The totals chain</h1>
+  <p class="sub">Five fields, one hoodie, and the shape every other lesson hangs on.</p>
+
+  <p class="lead">A Shopify order arrives as forty money fields, and the first instinct is to memorize them. Don't. They are one short chain with a breakdown attached to each link. Once you see the chain, every field tells you which link it belongs to, and the cashback question becomes "which link is my base?" This lesson builds the chain from a single hoodie to the first discount code. Every number reconciles, so check them as you go.</p>
+
+  <div class="recall">
+    <b>Where you started:</b> you proposed <code>total_price = quantity × price − discounts + tax</code>. Right shape, three gaps: shipping, tips, and the fact that <code>total_discounts</code> hides shipping discounts inside it. By the end of this lesson you will be able to write the correct version from memory.
+  </div>
+
+  <h2>The one idea</h2>
+<div class="chain">line items ──minus discounts──▶ subtotal ──plus shipping, tax, tip──▶ total
+     │                                │                                     │
+     │ price × quantity               │ never contains tax,                 │ what the card
+     │ per line                       │ shipping or tips                    │ was charged</div>
+  <p><code>subtotal_price</code> sits in the middle. Discounts push it down. Nothing else touches it. Tax, shipping and tips only reach <code>total_price</code>.<sup><a href="#r1">1</a></sup> When a field confuses you, ask which side of the subtotal it lives on.</p>
+  <p>The shop for every lesson is the same: British Columbia, 12% tax added on top of prices, shop currency CAD.</p>
+
+  <h2>Step 1. One hoodie</h2>
+<pre><code>{
+  "line_items": [
+    { "id": 1, "title": "Hoodie", "price": "60.00", "quantity": 1,
+      "total_discount": "0.00", "tax_lines": [] }
+  ],
+  "total_line_items_price": "60.00",
+  "total_discounts": "0.00",
+  "subtotal_price": "60.00",
+  "total_tax": "0.00",
+  "total_price": "60.00"
+}</code></pre>
+  <p>Every total is 60.00. With nothing else on the order, the whole chain collapses to the price of the one line. Notice that money comes as <b>strings</b>. Never parse them into floats.</p>
+
+  <h2>Step 2. Quantity 2. Where is the line total?</h2>
+<pre><code>"line_items": [ { "price": "60.00", "quantity": 2, "total_discount": "0.00" } ],
+"total_line_items_price": "120.00",
+"subtotal_price": "120.00",
+"total_price": "120.00"</code></pre>
+  <p>There is no line total in the REST payload. <code>price</code> stays the unit price. You compute the line yourself:</p>
+<pre><code>line value = price × quantity − total_discount
+           = 60.00 × 2 − 0.00 = 120.00</code></pre>
+  <p>GraphQL gives you <code>originalTotalSet</code> for the first half, and its <code>discountedTotalSet</code> removes only line-level discounts, not order or code discounts.<sup><a href="#r2">2</a></sup> The formula above is the one that always holds.</p>
+
+  <h2>Step 3. Tax at 12%</h2>
+<pre><code>"taxes_included": false,
+"line_items": [ { "price": "60.00", "quantity": 2,
+  "tax_lines": [ { "title": "PST+GST", "rate": 0.12, "price": "14.40" } ] } ],
+"tax_lines": [ { "title": "PST+GST", "rate": 0.12, "price": "14.40" } ],
+"subtotal_price": "120.00",
+"total_tax": "14.40",
+"total_price": "134.40"</code></pre>
+  <p>Tax appears twice, once on the line and once rolled up on the order. The subtotal did not move. The total did. <code>taxes_included: false</code> says the 60.00 was net of tax; the tax-inclusive case flips the arithmetic and gets its own lesson.</p>
+
+  <h2>Step 4. Shipping at 12.00</h2>
+<pre><code>"shipping_lines": [
+  { "title": "Standard", "price": "12.00", "discounted_price": "12.00",
+    "tax_lines": [ { "title": "PST+GST", "rate": 0.12, "price": "1.44" } ] } ],
+"subtotal_price": "120.00",
+"total_tax": "15.84",
+"total_price": "147.84"</code></pre>
+  <p>Shipping has its own price and its own tax line. Shipping tax joins <code>total_tax</code>: 14.40 + 1.44 = 15.84. The subtotal still does not move. There is no plain <code>total_shipping_price</code> string; shipping only exists in the <code>_set</code> form.<sup><a href="#r1">1</a></sup></p>
+
+  <h2>Step 5. A 10% code</h2>
+<pre><code>"discount_codes": [ { "code": "SAVE10", "amount": "12.00", "type": "percentage" } ],
+"line_items": [
+  { "price": "60.00", "quantity": 2, "total_discount": "12.00",
+    "discount_allocations": [ { "amount": "12.00", "discount_application_index": 0 } ],
+    "tax_lines": [ { "rate": 0.12, "price": "12.96" } ] } ],
+"total_line_items_price": "120.00",
+"total_discounts": "12.00",
+"subtotal_price": "108.00",
+"total_tax": "14.40",
+"total_price": "134.40"</code></pre>
+  <p><code>price</code> is still 60.00. The discount landed on the line as <code>total_discount</code>, "the total amount of the discount allocated to the line item".<sup><a href="#r1">1</a></sup> Line value: 120.00 − 12.00 = 108.00, which is now the subtotal.</p>
+  <p>Tax was recomputed on the discounted value: 12% of 108.00 is 12.96, plus 1.44 on shipping. Total: 108.00 + 12.00 + 14.40 = 134.40. That equals step 3 by coincidence, and it is a good reminder that <code>total_price</code> alone says little about what was bought.</p>
+
+  <h2>How the totals moved</h2>
+  <table class="ref">
+    <tr><th>step</th><th class="n">line items</th><th class="n">discounts</th><th class="n">subtotal</th><th class="n">shipping</th><th class="n">tax</th><th class="n">total</th></tr>
+    <tr><td>1 hoodie</td><td class="n">60.00</td><td class="n">0.00</td><td class="n">60.00</td><td class="n">0.00</td><td class="n">0.00</td><td class="n">60.00</td></tr>
+    <tr><td>2 qty 2</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">0.00</td><td class="n">120.00</td></tr>
+    <tr><td>3 tax</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">14.40</td><td class="n">134.40</td></tr>
+    <tr><td>4 shipping</td><td class="n">120.00</td><td class="n">0.00</td><td class="n">120.00</td><td class="n">12.00</td><td class="n">15.84</td><td class="n">147.84</td></tr>
+    <tr><td>5 code</td><td class="n">120.00</td><td class="n">12.00</td><td class="n">108.00</td><td class="n">12.00</td><td class="n">14.40</td><td class="n">134.40</td></tr>
+  </table>
+  <p>Read the subtotal column. It only moved once, at step 5, when a discount entered. Read the total column. It moved every time.</p>
+
+  <h2>The formulas, in plain words</h2>
+<pre><code>line value             = price × quantity − total_discount
+total_line_items_price = sum of (price × quantity) over all lines
+subtotal_price         = sum of line value over all lines
+shipping               = sum of discounted_price over all shipping lines
+total_tax              = sum of tax_lines.price over all lines and shipping lines
+total_price            = subtotal_price + shipping + total_tax + total_tip_received</code></pre>
+  <p>The <a href="../reference/the-totals-chain.html">reference card</a> keeps these, plus the two traps you will meet in Lesson 02.</p>
+
+  <div class="safety">
+    <div class="t">⚠ What this means for cashback</div>
+    Your normalizer picks one link as the base. <code>subtotal_price</code> is the merchandise value after discounts and before anything the merchant does not keep. smile-core's <code>rewardable_total</code> starts from <code>total_line_items_price</code> and works its way down to the same place under default settings.<sup><a href="#r3">3</a></sup> Whatever you pick, name the link, not the number.
+  </div>
+
+  <!-- ================= QUIZ ================= -->
+  <div class="quiz" id="quiz" data-course="shopify-orders" data-lesson="0001" data-title="Lesson 01 — The totals chain">
+    <h3>Practice now — recall from memory</h3>
+    <p style="font-family:inherit; color:var(--soft); margin:.2rem 0 0; font-size:.88rem">Tap an answer. Work the numbers in your head first.</p>
+
+    <div class="q" data-correct="1" data-note="Only discounts move the subtotal. Tax, shipping and tips live on the total side.">
+      <p>1. Which of these changes <code>subtotal_price</code>?</p>
+      <button class="opt">Adding a shipping line</button>
+      <button class="opt">Adding a discount code</button>
+      <button class="opt">Adding a tip amount</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="2" data-note="There is no line total field in REST. price is the unit price; you multiply and subtract the line's discount.">
+      <p>2. A line has <code>price</code> 60.00, <code>quantity</code> 2, <code>total_discount</code> 12.00. Its value is:</p>
+      <button class="opt">60.00, the price field</button>
+      <button class="opt">120.00, price times qty</button>
+      <button class="opt">108.00, after the discount</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="0" data-note="Line tax 14.40 plus shipping tax 1.44. Shipping carries its own tax line.">
+      <p>3. Step 4 has line tax 14.40 and shipping 12.00 taxed at 12%. <code>total_tax</code> is:</p>
+      <button class="opt">15.84, both tax lines</button>
+      <button class="opt">14.40, line tax only</button>
+      <button class="opt">17.28, twelve percent total</button>
+      <div class="fb"></div>
+    </div>
+
+    <div class="q" data-correct="1" data-note="Tax is recomputed on the discounted line value, so 12% of 108.00, not of 120.00.">
+      <p>4. After SAVE10, the hoodie line is worth 108.00. Its tax line becomes:</p>
+      <button class="opt">14.40, tax is unchanged</button>
+      <button class="opt">12.96, tax on discounted</button>
+      <button class="opt">10.80, tax minus discount</button>
+      <div class="fb"></div>
+    </div>
+  </div>
+
+  <h2>Your task before Lesson 02</h2>
+  <p class="next">Open one real <code>orders/updated</code> payload from a dev store, or the fixture in <code>spec/factories/shopify/hydrated_order.rb</code>. Without reading the header totals, compute <code>subtotal_price</code> and <code>total_price</code> from the lines, shipping and tax. Then compare. If they differ, find which link you missed.</p>
+
+  <div class="primary">
+    <div class="t">📌 Primary source</div>
+    <p style="margin:.4rem 0 0">Read the <a href="https://shopify.dev/docs/api/admin-rest/latest/resources/order" target="_blank">Order resource, REST Admin API</a>, just the properties list (~10 min). Look up each of the five header fields you used here and read Shopify's one-line definition. Notice how vague <code>total_price</code>'s definition is compared to the arithmetic you just did.</p>
+  </div>
+
+  <div class="ask">
+    👩‍🏫 <b>I am your teacher.</b> Send me any payload that does not reconcile and I will walk the chain with you. Ask follow-up questions in the session where this course lives; anything unclear here is a gap in the lesson, not in you.
+  </div>
+
+  <p class="next"><b>Next, Lesson 02:</b> the same 12.00 discount described in three places, a second line that splits it, a free shipping code that hides inside <code>total_discounts</code>, and an automatic discount that <code>discount_codes</code> never mentions.</p>
+
+  <div class="footer-nav">
+    <a href="0002-one-discount-three-places.html">Lesson 02 →</a>
+    <a href="../reference/the-totals-chain.html">🗂 Reference card</a>
+    <a href="../../progresso/">📊 My progress</a>
+    <a href="../">🧾 Course</a>
+  </div>
+
+  <div class="refs" id="refs">
+    <hr style="border:none;border-top:1px solid var(--rule)">
+    <ol>
+      <li id="r1"><a href="https://shopify.dev/docs/api/admin-rest/latest/resources/order" target="_blank">Shopify — Order (REST Admin API)</a>. <code>total_line_items_price</code>: "the sum of all line item prices before discounts and taxes". <code>subtotal_price</code>: "the price of the order before shipping and taxes are applied". <code>line_items.total_discount</code>: "the total amount of the discount allocated to the line item in the shop currency". Shipping total exists only as <code>total_shipping_price_set</code>.</li>
+      <li id="r2"><a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/LineItem" target="_blank">Shopify — LineItem (GraphQL Admin API)</a>. <code>originalTotalSet</code> "doesn't include discounts"; <code>discountedTotalSet</code> "doesn't include order-level discounts. Code-based discounts aren't included by default".</li>
+      <li id="r3">smile-core, <code>app/operations/channel/shopify/shopify_order/normalize.rb</code>, <code>normalized_rewardable_total</code>. Spec: <code>spec/operations/channel/shopify/shopify_order/normalize_spec.rb</code>.</li>
+    </ol>
+  </div>
+
+</div>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
